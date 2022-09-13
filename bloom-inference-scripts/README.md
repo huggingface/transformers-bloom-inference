@@ -161,3 +161,13 @@ deepspeed --num_gpus 1 scripts/bloom-inference-scripts/bloom-ds-zero-inference.p
 ```
 
 make sure to adjust `/path/to/nvme_offload` to somewhere you have ~400GB of free memory on a fast NVMe drive.
+
+## Support
+
+If you run into things not working or have other questions please open an Issue in the corresponding backend:
+
+- [Accelerate](https://github.com/huggingface/accelerate/issues)
+- [Deepspeed-Inference](./https://github.com/microsoft/DeepSpeed/issues)
+- [Deepspeed-ZeRO](./https://github.com/microsoft/DeepSpeed/issues)
+
+If there a specific issue with one of the scripts and not the backend only then please open an Issue here and tag @stas00.

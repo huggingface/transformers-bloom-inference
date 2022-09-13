@@ -1,4 +1,5 @@
 ## Inference solutions for BLOOM 176B
+
 We support HuggingFace accelerate and DeepSpeed Inference for generation.
 
 Install required packages:
@@ -29,6 +30,7 @@ For using BLOOM quantized, use dtype = int8. Also, change the model_name to micr
 HF accelerate uses [LLM.int8()](https://arxiv.org/abs/2208.07339) and DS-inference uses [ZeroQuant](https://arxiv.org/abs/2206.01861) for post-training quantization.
 
 #### BLOOM inference via command-line
+
 This asks for generate_kwargs everytime.
 Example: generate_kwargs =
 ```json
@@ -46,6 +48,7 @@ python scripts/bloom-inference-server/cli.py --model_name microsoft/bloom-deepsp
 ```
 
 #### BLOOM server deployment
+
 1. using HF accelerate
 ```shell
 python scripts/bloom-inference-server/server.py --model_name bigscience/bloom --dtype bf16 --deployment_framework hf_accelerate --host <HOST ADDRESS> --port <PORT> --allowed_max_new_tokens 100
@@ -62,6 +65,7 @@ python scripts/bloom-inference-server/examples/server_request.py --host <HOST AD
 ```
 
 #### Benchmark system for BLOOM inference
+
 1. using HF accelerate
 ```shell
 python scripts/bloom-inference-server/benchmark.py --model_name bigscience/bloom --dtype bf16 --deployment_framework hf_accelerate --benchmark_cycles 5
@@ -80,3 +84,14 @@ deepspeed --num_gpus 8 scripts/bloom-inference-server/benchmark.py --model_name 
 ```shell
 deepspeed --num_gpus 8 scripts/bloom-inference-server/benchmark.py --model_name bigscience/bloom --dtype bf16 --deployment_framework ds_zero --benchmark_cycles 5
 ```
+
+## Support
+
+
+If you run into things not working or have other questions please open an Issue in the corresponding backend:
+
+- [Accelerate](https://github.com/huggingface/accelerate/issues)
+- [Deepspeed-Inference](./https://github.com/microsoft/DeepSpeed/issues)
+- [Deepspeed-ZeRO](./https://github.com/microsoft/DeepSpeed/issues)
+
+If there a specific issue with one of the scripts and not the backend only then please open an Issue here and tag @mayank31398.
