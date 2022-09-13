@@ -61,21 +61,21 @@ pip install deepspeed>=0.7.3
 
 
 ```
-deepspeed --num_gpus 8 scripts/bloom-inference-scripts/bloom-ds-inference.py --name microsoft/bloom-deepspeed-inference-fp16
+deepspeed --num_gpus 8 bloom-inference-scripts/bloom-ds-inference.py --name microsoft/bloom-deepspeed-inference-fp16
 ```
 
 1a.
 if you want to run the original bloom checkpoint, which once loaded will run at the same throughput as the previous solution, but the loading will take 10-20min:
 
 ```
-deepspeed --num_gpus 8 scripts/bloom-inference-scripts/bloom-ds-inference.py --name bigscience/bloom
+deepspeed --num_gpus 8 bloom-inference-scripts/bloom-ds-inference.py --name bigscience/bloom
 ```
 
 2a. The 8bit quantized version requires you to have only half the GPU memory of the normal half precision version:
 
 
 ```
-deepspeed --num_gpus 8 scripts/bloom-inference-scripts/bloom-ds-inference.py --name microsoft/bloom-deepspeed-inference-int8 --dtype int8
+deepspeed --num_gpus 8 bloom-inference-scripts/bloom-ds-inference.py --name microsoft/bloom-deepspeed-inference-int8 --dtype int8
 ```
 
 Here we used `microsoft/bloom-deepspeed-inference-int8` and also told the script to run in `int8`.
@@ -83,7 +83,7 @@ Here we used `microsoft/bloom-deepspeed-inference-int8` and also told the script
 And of course, just 4x80GB A100 gpus is now sufficient:
 
 ```
-deepspeed --num_gpus 4 scripts/bloom-inference-scripts/bloom-ds-inference.py --name microsoft/bloom-deepspeed-inference-int8 --dtype int8
+deepspeed --num_gpus 4 bloom-inference-scripts/bloom-ds-inference.py --name microsoft/bloom-deepspeed-inference-int8 --dtype int8
 ```
 
 
@@ -104,7 +104,7 @@ pip install transformers>=4.21.3 accelerate>=0.12.0
 
 
 ```
-python scripts/bloom-inference-scripts/bloom-accelerate-inference.py --name bigscience/bloom --batch_size 1 --benchmark 2>&1 | tee bloom-ds-zero-inference_bs=1.txt
+python bloom-inference-scripts/bloom-accelerate-inference.py --name bigscience/bloom --batch_size 1 --benchmark 2>&1 | tee bloom-ds-zero-inference_bs=1.txt
 ```
 
 To activate the 8bit quantized solution first install `bitsnbytes`:
@@ -116,12 +116,12 @@ pip install bitsandbytes
 and then add `--dtype int8` to the previous command line:
 
 ```
-python scripts/bloom-inference-scripts/bloom-accelerate-inference.py --name bigscience/bloom --dtype int8 --batch_size 1 --benchmark 2>&1 | tee bloom-int8-accelerate-inference_bs=4.txt
+python bloom-inference-scripts/bloom-accelerate-inference.py --name bigscience/bloom --dtype int8 --batch_size 1 --benchmark 2>&1 | tee bloom-int8-accelerate-inference_bs=4.txt
 ```
 
 if you have more that 4 GPUs you can tell it to use only 4 with:
 ```
-CUDA_VISIBLE_DEVICES=0,1,2,3 python scripts/bloom-inference-scripts/bloom-accelerate-inference.py --name bigscience/bloom --dtype int8 --batch_size 1 --benchmark 2>&1 | tee bloom-int8-accelerate-inference_bs=4.txt
+CUDA_VISIBLE_DEVICES=0,1,2,3 python bloom-inference-scripts/bloom-accelerate-inference.py --name bigscience/bloom --dtype int8 --batch_size 1 --benchmark 2>&1 | tee bloom-int8-accelerate-inference_bs=4.txt
 ```
 
 
@@ -142,7 +142,7 @@ Note that the script currently runs the same inputs on all GPUs, but you can run
 
 
 ```
-deepspeed --num_gpus 8 scripts/bloom-inference-scripts/bloom-ds-zero-inference.py --name bigscience/bloom --batch_size 1 --benchmark 2>&1 | tee bloom-ds-zero-inference_bs=1.txt
+deepspeed --num_gpus 8 bloom-inference-scripts/bloom-ds-zero-inference.py --name bigscience/bloom --batch_size 1 --benchmark 2>&1 | tee bloom-ds-zero-inference_bs=1.txt
 ```
 
 Please remember that with ZeRO the user can generate multiple unique streams at the same time - and thus the overall performance should be throughput in secs/token divided by number of participating gpus - so 8x to 16x faster depending on whether 8 or 16 gpus were used!
@@ -152,12 +152,12 @@ You can also try the offloading solutions with just one small GPU, which will ta
 
 CPU-Offload (1x gpus):
 ```
-deepspeed --num_gpus 1 scripts/bloom-inference-scripts/bloom-ds-zero-inference.py --name bigscience/bloom --batch_size 8 --cpu_offload --benchmark 2>&1 | tee bloom-ds-zero-inference-cpu_offload_bs=8.txt
+deepspeed --num_gpus 1 bloom-inference-scripts/bloom-ds-zero-inference.py --name bigscience/bloom --batch_size 8 --cpu_offload --benchmark 2>&1 | tee bloom-ds-zero-inference-cpu_offload_bs=8.txt
 ```
 
 NVMe-Offload (1x gpus):
 ```
-deepspeed --num_gpus 1 scripts/bloom-inference-scripts/bloom-ds-zero-inference.py --name bigscience/bloom --batch_size 8 --nvme_offload_path=/path/to/nvme_offload --benchmark 2>&1 | tee bloom-ds-zero-inference-nvme_offload_bs=8.txt
+deepspeed --num_gpus 1 bloom-inference-scripts/bloom-ds-zero-inference.py --name bigscience/bloom --batch_size 8 --nvme_offload_path=/path/to/nvme_offload --benchmark 2>&1 | tee bloom-ds-zero-inference-nvme_offload_bs=8.txt
 ```
 
 make sure to adjust `/path/to/nvme_offload` to somewhere you have ~400GB of free memory on a fast NVMe drive.
