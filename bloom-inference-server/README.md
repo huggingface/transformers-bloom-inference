@@ -94,4 +94,4 @@ If you run into things not working or have other questions please open an Issue 
 - [Deepspeed-Inference](./https://github.com/microsoft/DeepSpeed/issues)
 - [Deepspeed-ZeRO](./https://github.com/microsoft/DeepSpeed/issues)
 
-If there a specific issue with one of the scripts and not the backend only then please open an Issue here and tag @mayank31398.
+If there a specific issue with one of the scripts and not the backend only then please open an Issue here and tag [@mayank31398](https://github.com/mayank31398).

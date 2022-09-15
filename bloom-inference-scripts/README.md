@@ -32,7 +32,7 @@ Start to ready to generate in secs (mainly loading and data preparation time):
 | ds-inference unsharded  |  662 |
 | ds-zero                 |  462 |
 
-Now let's look at the power of quantized int8-based models provided by Deepspeed-Inference and BitsNBytes, as it requires only half the original GPU memory of inference in bfloat16 or float16.
+Now let's look at the power of quantized int8-based models provided by [Deepspeed-Inference](https://www.deepspeed.ai/tutorials/inference-tutorial/) and [BitsNBytes](https://github.com/TimDettmers/bitsandbytes), as it requires only half the original GPU memory of inference in bfloat16 or float16.
 
 Throughput in msecs 4x80GB A100:
 
@@ -104,7 +104,7 @@ pip install transformers>=4.21.3 accelerate>=0.12.0
 
 
 ```
-python bloom-inference-scripts/bloom-accelerate-inference.py --name bigscience/bloom --batch_size 1 --benchmark 2>&1 | tee bloom-ds-zero-inference_bs=1.txt
+python bloom-inference-scripts/bloom-accelerate-inference.py --name bigscience/bloom --batch_size 1 --benchmark 2>&1 | tee bloom-accelerate-inference_bs=1.txt
 ```
 
 To activate the 8bit quantized solution first install `bitsnbytes`:
@@ -116,18 +116,19 @@ pip install bitsandbytes
 and then add `--dtype int8` to the previous command line:
 
 ```
-python bloom-inference-scripts/bloom-accelerate-inference.py --name bigscience/bloom --dtype int8 --batch_size 1 --benchmark 2>&1 | tee bloom-int8-accelerate-inference_bs=4.txt
+python bloom-inference-scripts/bloom-accelerate-inference.py --name bigscience/bloom --dtype int8 --batch_size 1 --benchmark 2>&1 | tee bloom-int8-accelerate-inference_bs=1.txt
 ```
 
-if you have more that 4 GPUs you can tell it to use only 4 with:
+if you have more than 4 GPUs you can tell it to use only 4 with:
 ```
-CUDA_VISIBLE_DEVICES=0,1,2,3 python bloom-inference-scripts/bloom-accelerate-inference.py --name bigscience/bloom --dtype int8 --batch_size 1 --benchmark 2>&1 | tee bloom-int8-accelerate-inference_bs=4.txt
+CUDA_VISIBLE_DEVICES=0,1,2,3 python bloom-inference-scripts/bloom-accelerate-inference.py --name bigscience/bloom --dtype int8 --batch_size 1 --benchmark 2>&1 | tee bloom-int8-accelerate-inference_bs=1.txt
 ```
 
 
 ## Deepspeed ZeRO-Inference
 
-https://www.deepspeed.ai/tutorials/zero/
+
+[Deepspeed ZeRO](https://www.deepspeed.ai/tutorials/zero/) uses a magical sharding approach which can take almost any model and scale it across a few or hundreds of GPUs.
 
 ### Setup
 
@@ -170,4 +171,4 @@ If you run into things not working or have other questions please open an Issue 
 - [Deepspeed-Inference](./https://github.com/microsoft/DeepSpeed/issues)
 - [Deepspeed-ZeRO](./https://github.com/microsoft/DeepSpeed/issues)
 
-If there a specific issue with one of the scripts and not the backend only then please open an Issue here and tag @stas00.
+If there a specific issue with one of the scripts and not the backend only then please open an Issue here and tag [@stas00](https://github.com/stas00).
