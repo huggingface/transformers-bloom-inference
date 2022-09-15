@@ -1,6 +1,4 @@
-# transformers-bloom-inference
-
-Fast Inference Solutions for BLOOM
+# Fast Inference Solutions for BLOOM
 
 This repo provides demos and packages to perform fast inference solutions for BLOOM. Some of the solutions have their own repos in which case a link to the corresponding repos is provided instead.
 
