@@ -24,10 +24,13 @@ class HFAccelerateModel(Model):
             )
         }
         if (args.dtype == torch.int8):
+            # using LLM.int8()
             kwargs["load_in_8bit"] = True
         else:
             kwargs["torch_dtype"] = args.dtype
 
+        # this is the CUDA device for the current process. This will be used
+        # later to identify the GPU on which to transfer tensors
         self.model = AutoModelForCausalLM.from_pretrained(**kwargs)
 
         self.model.requires_grad_(False)

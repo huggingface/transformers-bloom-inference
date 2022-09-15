@@ -38,6 +38,7 @@ class GenerateRequest(BaseModel):
     method: str = "generate"
 
     def preprocess(self) -> None:
+        # temperature = 0 means greedy decoding
         if (self.temperature == 0):
             self.do_sample = False
 
@@ -85,6 +86,7 @@ def parse_field(kwargs: dict,
 
 
 def parse_generate_kwargs(text: List[str], kwargs: dict) -> GenerateRequest:
+    # get user generate_kwargs as json and parse it
     return GenerateRequest(
         text=text,
         min_length=parse_field(kwargs, "min_length", int),

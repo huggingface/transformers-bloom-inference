@@ -65,6 +65,8 @@ class Model:
             o - i for i, o in zip(input_token_lengths, output_token_lengths)]
 
         if (request.remove_input_from_output):
+            # the generate method's output includes input too. Remove input if
+            # that is requested by the user
             output_tokens = [x[-i:]
                              for x, i in zip(output_tokens, generated_tokens)]
 
@@ -101,6 +103,5 @@ def get_downloaded_model_path(model_name: str):
     )
     # download only on 1 process
     run_rank_n(f, barrier=True)
-    # now since the snapshot is downloaded, pass the
-    # model_path to all processes
+    # now since the snapshot is downloaded, pass the model_path to all processes
     return f()

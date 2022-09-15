@@ -19,7 +19,7 @@ from .constants import (
     SCRIPT_FRAMEWORK_MODEL_DTYPE_ALLOWED
 )
 
-
+# used for benchmarks
 dummy_input_sentences = [
     "DeepSpeed is a machine learning framework",
     "He is working on",
@@ -90,6 +90,7 @@ def run_rank_n(func: partial,
                barrier: bool = False,
                rank: int = 0,
                other_rank_output: Any = None) -> Any:
+    # runs function on only process with specified rank
     if (dist.is_initialized()):
         if (dist.get_rank() == rank):
             output = func()
@@ -105,6 +106,7 @@ def run_rank_n(func: partial,
 
 
 def print_rank_n(*values, rank: int = 0) -> None:
+    # print on only process with specified rank
     if (dist.is_initialized()):
         if (dist.get_rank() == rank):
             print(*values)
@@ -159,6 +161,7 @@ def get_num_tokens_to_generate(max_new_tokens: int,
 
 
 def run_and_log_time(execs: Union[List[partial], partial]) -> Tuple[Union[List[Any], Any], float]:
+    # runs a function / list of functions and times them
     start_time = time.time()
 
     if (type(execs) == list):
@@ -173,6 +176,7 @@ def run_and_log_time(execs: Union[List[partial], partial]) -> Tuple[Union[List[A
 
 
 def pad_ids(arrays, padding, max_length=-1):
+    # does left padding
     if (max_length < 0):
         max_length = max(list(map(len, arrays)))
 

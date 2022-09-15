@@ -21,6 +21,8 @@ class DSZeROModel(Model):
         world_size = int(os.getenv('WORLD_SIZE', '1'))
         train_batch_size = 1 * world_size
 
+        # try playing with these parameters, might improve throughput for you
+        # hardware setup
         ds_config = {
             "fp16": {
                 "enabled": args.dtype == torch.float16,
@@ -57,11 +59,16 @@ class DSZeROModel(Model):
         self.model = AutoModelForCausalLM.from_pretrained(
             downloaded_model_path, torch_dtype=args.dtype)
         self.model = self.model.eval()
+
+        # convert model to a fully sharded model using ZeRO
         self.model = deepspeed.initialize(
             model=self.model, config_params=ds_config)[0]
+
         self.model.module.eval()
         self.model = self.model.module
 
+        # this is the CUDA device for the current process. This will be used
+        # later to identify the GPU on which to transfer tensors
         self.input_device = torch.cuda.current_device()
 
         print_rank_n("Model loaded")
