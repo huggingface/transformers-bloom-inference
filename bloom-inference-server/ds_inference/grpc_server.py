@@ -19,6 +19,8 @@ from utils import (
 
 class DSInferenceGRPCServer(Model):
     def __init__(self, args: argparse.Namespace) -> None:
+        # name for the deployment. this is used to get a reference to the GRPC
+        # service, once deployed
         self.deployment_name = "ds_inference_grpc_server"
 
         downloaded_model_path = get_downloaded_model_path(args.model_name)
@@ -47,6 +49,7 @@ class DSInferenceGRPCServer(Model):
         elif (args.dtype == torch.bfloat16):
             raise NotImplementedError("bfloat16 is not yet supported")
 
+        # get the GRPC service launched in the above code
         self.model = mii.mii_query_handle(self.deployment_name)
 
     def generate(self, request: GenerateRequest) -> GenerateResponse:
@@ -67,6 +70,8 @@ class DSInferenceGRPCServer(Model):
             o - i for i, o in zip(input_token_lengths, output_token_lengths)]
 
         if (request.remove_input_from_output):
+            # the generate method's output includes input too. Remove input if
+            # that is requested by the user
             output_tokens = [x[-i:]
                              for x, i in zip(output_tokens, num_generated_tokens)]
             output_text = self.tokenizer.batch_decode(
@@ -79,8 +84,11 @@ class DSInferenceGRPCServer(Model):
 
     def shutdown(self) -> None:
         print_rank_n("shutting down")
-        # MII is buggy and sometimes spits out an error in terminate
         try:
+            # try termination of the GRPC server. this is not guaranteed to be
+            # successfull and the user might need to clear the GPU memory
+            # manually by running mii.terminate(...) themselves.
+            # MII is buggy and sometimes spits out an error in terminate
             mii.terminate(self.deployment_name)
         except Exception:
             pass

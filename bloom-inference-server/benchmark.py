@@ -28,6 +28,7 @@ from utils import (
 def benchmark_generation(model: Model,
                          request: GenerateRequest,
                          cycles: int = 5):
+    # run benchmarks for number of cycles
     total_new_tokens_generated = 0
     for _ in range(cycles):
         response = model.generate(request)
