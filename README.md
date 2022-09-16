@@ -12,7 +12,7 @@ Pytorch:
 
 * [Accelerate, DeepSpeed-Inference and DeepSpeed-ZeRO](./bloom-inference-scripts)
 
-* [Custom Fused Kernel approach](https://github.com/huggingface/transformers_bloom_parallel)
+* (This is private at the moment, asking to make it public when ready) [Custom Fused Kernel approach](https://github.com/huggingface/transformers_bloom_parallel)
 
 JAX:
 
