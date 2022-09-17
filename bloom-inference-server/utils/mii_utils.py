@@ -113,16 +113,7 @@ class MIIServerClient(mii.MIIServerClient):
             assert False, "unknown task"
         return response
 
-    def _request_response(self, request_dict, query_kwargs):
-        start = time.time()
-        if self.task == mii.Tasks.TEXT_GENERATION:
-            response = self.model(request_dict['query'], **query_kwargs)
-        else:
-            raise NotImplementedError(f"task is not supported: {self.task}")
-        end = time.time()
-        return f"{response}" + f"\n Model Execution Time: {end-start} seconds"
-
-    def query(self, request_dict, **query_kwargs):
+    async def query(self, request_dict, **query_kwargs):
         """Query a local deployment:
 
             mii/examples/local/gpt2-query-example.py
@@ -140,7 +131,7 @@ class MIIServerClient(mii.MIIServerClient):
             ret = f"{response}"
         else:
             assert self.initialize_grpc_client, "grpc client has not been setup when this model was created"
-            response = self._query_in_tensor_parallel(request_dict,
+            response = await self._query_in_tensor_parallel(request_dict,
                                                query_kwargs)
             ret = response.result()
         return ret

@@ -114,7 +114,7 @@ class Server:
         request.max_new_tokens = get_num_tokens_to_generate(
             request.max_new_tokens, self.allowed_max_new_tokens)
 
-        response, total_time_taken = run_and_log_time(
+        response, total_time_taken = await run_and_log_time(
             partial(self.model.generate, request=request)
         )
 
