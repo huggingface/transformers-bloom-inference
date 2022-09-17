@@ -88,9 +88,10 @@ class MIIServerClient(mii.MIIServerClient):
     #runs task in parallel and return the result from the first task
     async def _query_in_tensor_parallel(self, request_string, query_kwargs):
         responses = []
+        loop = asyncio.get_event_loop()
         for i in range(self.num_gpus):
             responses.append(
-                asyncio.create_task(
+                loop.create_task(
                     self._request_async_response(i,
                                                  request_string,
                                                  query_kwargs)))
