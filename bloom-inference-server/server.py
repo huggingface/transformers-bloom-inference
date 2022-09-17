@@ -108,22 +108,25 @@ class Server:
 
         return response
 
-    def generate(self, request: GenerateRequest) -> GenerateResponse:
+    async def generate_(self, request: GenerateRequest) -> GenerateResponse:
+        request.preprocess()
+
+        request.max_new_tokens = get_num_tokens_to_generate(
+            request.max_new_tokens, self.allowed_max_new_tokens)
+
+        response, total_time_taken = run_and_log_time(
+            partial(self.model.generate, request=request)
+        )
+
+        response.query_id = self.query_ids.generate_query_id
+        self.query_ids.generate_query_id += 1
+        response.total_time_taken = "{:.2f} secs".format(total_time_taken)
+
+        return response
+
+    async def generate(self, request: GenerateRequest) -> GenerateResponse:
         try:
-            request.preprocess()
-
-            request.max_new_tokens = get_num_tokens_to_generate(
-                request.max_new_tokens, self.allowed_max_new_tokens)
-
-            response, total_time_taken = run_and_log_time(
-                partial(self.model.generate, request=request)
-            )
-
-            response.query_id = self.query_ids.generate_query_id
-            self.query_ids.generate_query_id += 1
-            response.total_time_taken = "{:.2f} secs".format(total_time_taken)
-
-            return response
+            return await self.generate_(request)
         except Exception:
             response = self.get_exception_response(
                 self.query_ids.generate_query_id, request.method)
