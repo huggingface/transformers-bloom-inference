@@ -22,8 +22,6 @@ from utils import (
     run_and_log_time
 )
 from uvicorn import run
-import nest_asyncio
-nest_asyncio.apply()
 
 
 class QueryID(BaseModel):

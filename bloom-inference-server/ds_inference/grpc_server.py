@@ -13,7 +13,8 @@ from utils import (
     get_downloaded_model_path,
     get_filter_dict,
     get_str_dtype,
-    print_rank_n
+    print_rank_n,
+    mii_query_handle
 )
 
 
@@ -50,7 +51,7 @@ class DSInferenceGRPCServer(Model):
             raise NotImplementedError("bfloat16 is not yet supported")
 
         # get the GRPC service launched in the above code
-        self.model = mii.mii_query_handle(self.deployment_name)
+        self.model = mii_query_handle(self.deployment_name)
 
     def generate(self, request: GenerateRequest) -> GenerateResponse:
         output_text = self.model.query(
