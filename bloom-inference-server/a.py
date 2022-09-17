@@ -9,4 +9,6 @@ class Args:
 
 model = DSInferenceGRPCServer(Args())
 
-print(asyncio.run(model.generate(GenerateRequest(text=["hello"], max_new_tokens=20))))
+loop = asyncio.new_event_loop()
+print(loop.run_until_complete(model.generate(GenerateRequest(text=["hello"], max_new_tokens=20))))
+loop.close()
