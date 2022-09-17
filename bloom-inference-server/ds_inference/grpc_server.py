@@ -57,7 +57,8 @@ class DSInferenceGRPCServer(Model):
         output_text = await self.model.query(
             {"query": request.text},
             **get_filter_dict(request)
-        ).response
+        )
+        output_text = output_text.response
 
         output_text = [_ for _ in output_text]
 

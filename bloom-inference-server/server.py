@@ -114,9 +114,8 @@ class Server:
         request.max_new_tokens = get_num_tokens_to_generate(
             request.max_new_tokens, self.allowed_max_new_tokens)
 
-        response, total_time_taken = await run_and_log_time(
-            partial(self.model.generate, request=request)
-        )
+        response = await self.model.generate(request)
+        total_time_taken = 0
 
         response.query_id = self.query_ids.generate_query_id
         self.query_ids.generate_query_id += 1
