@@ -1,5 +1,5 @@
 import asyncio
-from urllib import request
+import time
 import torch
 from ds_inference import DSInferenceGRPCServer
 from utils import GenerateRequest
@@ -9,6 +9,7 @@ class Args:
     dtype = torch.float16
 
 model = DSInferenceGRPCServer(Args())
+time.sleep(10)
 
 # --------------------------------------------------------------------
 def f(request):
