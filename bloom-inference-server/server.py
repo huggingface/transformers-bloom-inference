@@ -25,6 +25,7 @@ class Args:
         "DEPLOYMENT_FRAMEWORK", HF_ACCELERATE)
     model_name: str = os.getenv("MODEL_NAME")
     dtype: torch.dtype = get_torch_dtype(os.getenv("DTYPE"))
+    allowed_max_new_tokens: os.getenv("ALLOWED_MAX_NEW_TOKENS", 100)
 
 
 # ------------------------------------------------------
