@@ -86,6 +86,8 @@ class Server:
             timeout=600,
         )
 
+        self.event_loop = self.model.asyncio_loop
+
     def get_exception_response(self, query_id: int, method: str):
         e_type, e_message, e_stack_trace = sys.exc_info()
         response = {
@@ -114,7 +116,7 @@ class Server:
         request.max_new_tokens = get_num_tokens_to_generate(
             request.max_new_tokens, self.allowed_max_new_tokens)
 
-        response = await self.model.generate(request)
+        response = self.model.generate(request)
         total_time_taken = 0
 
         response.query_id = self.query_ids.generate_query_id
@@ -125,7 +127,7 @@ class Server:
 
     async def generate(self, request: GenerateRequest) -> GenerateResponse:
         try:
-            return await self.generate_(request)
+            return self.event_loop.run_until_complete(self.generate_(request))
         except Exception:
             response = self.get_exception_response(
                 self.query_ids.generate_query_id, request.method)

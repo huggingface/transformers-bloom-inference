@@ -171,7 +171,7 @@ class MIIServerClient(mii.MIIServerClient):
         end = time.time()
         return f"{response}" + f"\n Model Execution Time: {end-start} seconds"
 
-    async def query(self, request_dict, **query_kwargs):
+    def query(self, request_dict, **query_kwargs):
         """Query a local deployment:
 
             mii/examples/local/gpt2-query-example.py
@@ -189,6 +189,8 @@ class MIIServerClient(mii.MIIServerClient):
             ret = f"{response}"
         else:
             assert self.initialize_grpc_client, "grpc client has not been setup when this model was created"
-            response = await self._query_in_tensor_parallel(request_dict, query_kwargs)
+            response = self.asyncio_loop.run_until_complete(
+                self._query_in_tensor_parallel(request_dict,
+                                               query_kwargs))
             ret = response.result()
         return ret

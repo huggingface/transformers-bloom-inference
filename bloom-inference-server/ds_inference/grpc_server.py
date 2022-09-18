@@ -53,8 +53,8 @@ class DSInferenceGRPCServer(Model):
         # get the GRPC service launched in the above code
         self.model = mii_query_handle(self.deployment_name)
 
-    async def generate(self, request: GenerateRequest) -> GenerateResponse:
-        output_text = await self.model.query(
+    def generate(self, request: GenerateRequest) -> GenerateResponse:
+        output_text = self.model.query(
             {"query": request.text},
             **get_filter_dict(request)
         )
