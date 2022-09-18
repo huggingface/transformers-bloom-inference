@@ -5,7 +5,7 @@ We support HuggingFace accelerate and DeepSpeed Inference for generation.
 Install required packages:
 
 ```shell
-pip install fastapi uvicorn accelerate huggingface_hub>=0.9.0 deepspeed>=0.7.3
+pip install flask flask_api pydantic accelerate huggingface_hub>=0.9.0 deepspeed>=0.7.3
 ```
 To install [DeepSpeed-MII](https://github.com/microsoft/DeepSpeed-MII):
 ```shell
@@ -49,20 +49,7 @@ python bloom-inference-server/cli.py --model_name microsoft/bloom-deepspeed-infe
 
 #### BLOOM server deployment
 
-1. using HF accelerate
-```shell
-python bloom-inference-server/server.py --model_name bigscience/bloom --dtype bf16 --deployment_framework hf_accelerate --host <HOST ADDRESS> --port <PORT> --allowed_max_new_tokens 100
-```
-
-2. using DS inference
-```shell
-python bloom-inference-server/server.py --model_name microsoft/bloom-deepspeed-inference-fp16 --dtype fp16 --deployment_framework ds_inference --host <HOST ADDRESS> --port <PORT> --allowed_max_new_tokens 100
-```
-
-We provide an example [script](examples/server_request.py) to query the BLOOM server is provided. To run this script:
-```shell
-python bloom-inference-server/examples/server_request.py --host <HOST ADDRESS> --port <PORT>
-```
+[server.sh](server.sh) can be used to launch a generation server. Please not that the serving method is synchronous and users have to wait in queue until the preceding requests have been processed.
 
 #### Benchmark system for BLOOM inference
 
