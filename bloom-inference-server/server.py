@@ -1,7 +1,6 @@
 import os
 from functools import partial
 
-import torch
 from flask import Flask, request
 from pydantic import BaseModel
 from requests.exceptions import HTTPError
@@ -39,7 +38,7 @@ app = Flask(__name__)
 
 @app.route("/query_id/", methods=["GET"])
 def query_id():
-    return query_ids
+    return query_ids.dict()
 
 
 @app.route("/tokenize/", methods=["POST"])
@@ -57,7 +56,7 @@ def tokenize():
         response.total_time_taken = "{:.2f} msecs".format(
             total_time_taken * 1000)
 
-        return response
+        return response.dict()
     except Exception:
         response = get_exception_response(
             query_ids.tokenize_query_id, x.method)
@@ -84,7 +83,7 @@ def generate():
         response.total_time_taken = "{:.2f} msecs".format(
             total_time_taken * 1000)
 
-        return response
+        return response.dict()
     except Exception:
         response = get_exception_response(
             query_ids.generate_query_id, x.method)
