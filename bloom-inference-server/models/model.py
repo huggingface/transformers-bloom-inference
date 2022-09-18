@@ -3,12 +3,10 @@ import os
 from functools import partial
 
 import torch
-from transformers.utils import is_offline_mode
-
 from huggingface_hub import snapshot_download
-
-from .requests import GenerateRequest, GenerateResponse, TokenizeRequest, TokenizeResponse
-from .utils import print_rank_n, run_rank_n
+from transformers.utils import is_offline_mode
+from utils import (GenerateRequest, GenerateResponse, TokenizeRequest,
+                   TokenizeResponse, print_rank_n, run_rank_n)
 
 
 class Model:

@@ -7,7 +7,7 @@ from flask import Flask, request
 from pydantic import BaseModel
 from requests.exceptions import HTTPError
 
-from ds_inference import DSInferenceGRPCServer
+from models import HFAccelerateModel, DSInferenceGRPCServer, get_model_class
 from utils import (HF_ACCELERATE, GenerateRequest, TokenizeRequest,
                    get_exception_response, get_num_tokens_to_generate,
                    get_torch_dtype, parse_generate_kwargs, run_and_log_time)
@@ -29,9 +29,9 @@ class Args:
 
 # ------------------------------------------------------
 args = Args()
-app = Flask(__name__)
-model = DSInferenceGRPCServer(args)
+model = get_model_class(args.deployment_framework)
 query_ids = QueryID()
+app = Flask(__name__)
 # ------------------------------------------------------
 
 
