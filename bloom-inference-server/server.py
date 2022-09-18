@@ -110,7 +110,7 @@ class Server:
 
         return response
 
-    async def generate_(self, request: GenerateRequest) -> GenerateResponse:
+    def generate_(self, request: GenerateRequest) -> GenerateResponse:
         request.preprocess()
 
         request.max_new_tokens = get_num_tokens_to_generate(
@@ -127,8 +127,9 @@ class Server:
 
     def generate(self, request: GenerateRequest) -> GenerateResponse:
         try:
-            task = self.event_loop.create_task(self.generate_(request))
-            return self.event_loop.run_until_complete(task)
+            return self.generate_(request)
+            # task = self.event_loop.create_task(self.generate_(request))
+            # return self.event_loop.run_until_complete(task)
         except Exception:
             response = self.get_exception_response(
                 self.query_ids.generate_query_id, request.method)

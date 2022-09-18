@@ -8,7 +8,7 @@ from mii.utils import kwarg_dict_to_proto
 from mii.grpc_related.proto import modelresponse_pb2
 
 
-def mii_query_handle(deployment_name):
+def mii_query_handle(deployment_name, event_loop):
     """Get a query handle for a local deployment:
 
         mii/examples/local/gpt2-query-example.py
@@ -35,7 +35,8 @@ def mii_query_handle(deployment_name):
                                mii_configs=configs[mii.constants.MII_CONFIGS_KEY],
                                initialize_service=False,
                                initialize_grpc_client=True,
-                               use_grpc_server=True)
+                               use_grpc_server=True,
+                               event_loop=event_loop)
 
 
 class MIIServerClient(mii.MIIServerClient):
@@ -50,7 +51,8 @@ class MIIServerClient(mii.MIIServerClient):
                  mii_configs={},
                  initialize_service=True,
                  initialize_grpc_client=True,
-                 use_grpc_server=False):
+                 use_grpc_server=False,
+                 event_loop=None):
 
         mii_configs = mii.config.MIIConfig(**mii_configs)
 
@@ -83,7 +85,7 @@ class MIIServerClient(mii.MIIServerClient):
 
         if self.initialize_grpc_client and self.use_grpc_server:
             self.stubs = []
-            self.asyncio_loop = asyncio.get_event_loop()
+            self.asyncio_loop = event_loop
             self._initialize_grpc_client()
 
     #runs task in parallel and return the result from the first task
