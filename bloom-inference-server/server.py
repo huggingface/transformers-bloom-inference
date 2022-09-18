@@ -86,7 +86,7 @@ class Server:
             timeout=600,
         )
 
-        self.event_loop = self.model.asyncio_loop
+        self.event_loop = self.model.model.asyncio_loop
 
     def get_exception_response(self, query_id: int, method: str):
         e_type, e_message, e_stack_trace = sys.exc_info()
