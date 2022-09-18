@@ -8,6 +8,10 @@ from mii.utils import kwarg_dict_to_proto
 from mii.grpc_related.proto import modelresponse_pb2
 
 
+import nest_asyncio
+nest_asyncio.apply()
+
+
 def mii_query_handle(deployment_name, event_loop):
     """Get a query handle for a local deployment:
 

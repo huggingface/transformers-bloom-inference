@@ -22,6 +22,9 @@ from utils import (
     run_and_log_time
 )
 from uvicorn import run
+import asyncio
+import nest_asyncio
+nest_asyncio.apply()
 
 
 class QueryID(BaseModel):
@@ -110,7 +113,7 @@ class Server:
 
         return response
 
-    def generate_(self, request: GenerateRequest) -> GenerateResponse:
+    async def generate_(self, request: GenerateRequest) -> GenerateResponse:
         request.preprocess()
 
         request.max_new_tokens = get_num_tokens_to_generate(
@@ -127,7 +130,7 @@ class Server:
 
     def generate(self, request: GenerateRequest) -> GenerateResponse:
         try:
-            return self.generate_(request)
+            return asyncio.run(self.generate_(request))
             # task = self.event_loop.create_task(self.generate_(request))
             # return self.event_loop.run_until_complete(task)
         except Exception:
