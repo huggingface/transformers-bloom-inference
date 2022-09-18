@@ -2,8 +2,9 @@ from argparse import Namespace
 
 import torch
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
+from utils import print_rank_n
 
-from utils import Model, get_downloaded_model_path, print_rank_n
+from .model import Model, get_downloaded_model_path
 
 
 class HFAccelerateModel(Model):
