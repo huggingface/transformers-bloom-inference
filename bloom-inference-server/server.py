@@ -2,13 +2,14 @@ import os
 from functools import partial
 
 from flask import Flask, request
+from flask_api import status
 from pydantic import BaseModel
-from requests.exceptions import HTTPError
+from requests import HTTPError
 
 from models import get_model_class
 from utils import (HF_ACCELERATE, GenerateRequest, TokenizeRequest,
                    get_exception_response, get_num_tokens_to_generate,
-                   get_torch_dtype, run_and_log_time, parse_bool)
+                   get_torch_dtype, parse_bool, run_and_log_time)
 
 
 class QueryID(BaseModel):
@@ -24,7 +25,8 @@ class Args:
             "DEPLOYMENT_FRAMEWORK", HF_ACCELERATE)
         self.model_name = os.getenv("MODEL_NAME")
         self.dtype = get_torch_dtype(os.getenv("DTYPE"))
-        self.allowed_max_new_tokens = int(os.getenv("ALLOWED_MAX_NEW_TOKENS", 100))
+        self.allowed_max_new_tokens = int(
+            os.getenv("ALLOWED_MAX_NEW_TOKENS", 100))
         self.debug = parse_bool(os.getenv("DEBUG", "false"))
 
 
@@ -38,7 +40,7 @@ app = Flask(__name__)
 
 @app.route("/query_id/", methods=["GET"])
 def query_id():
-    return query_ids.dict()
+    return query_ids.dict(), status.HTTP_200_OK
 
 
 @app.route("/tokenize/", methods=["POST"])
@@ -56,7 +58,7 @@ def tokenize():
         response.total_time_taken = "{:.2f} msecs".format(
             total_time_taken * 1000)
 
-        return response.dict()
+        return response.dict(), status.HTTP_200_OK
     except Exception:
         response = get_exception_response(
             query_ids.tokenize_query_id, x.method)
@@ -80,10 +82,9 @@ def generate():
 
         response.query_id = query_ids.generate_query_id
         query_ids.generate_query_id += 1
-        response.total_time_taken = "{:.2f} msecs".format(
-            total_time_taken * 1000)
+        response.total_time_taken = "{:.2f} secs".format(total_time_taken)
 
-        return response.dict()
+        return response.dict(), status.HTTP_200_OK
     except Exception:
         response = get_exception_response(
             query_ids.generate_query_id, x.method)
