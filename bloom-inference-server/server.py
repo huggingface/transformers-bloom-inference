@@ -6,9 +6,11 @@ from flask_api import status
 from pydantic import BaseModel
 
 from models import get_model_class
-from utils import (HF_ACCELERATE, GenerateRequest, TokenizeRequest,
+from utils import (HF_ACCELERATE, SERVER, GenerateRequest, TokenizeRequest,
                    get_exception_response, get_num_tokens_to_generate,
-                   get_torch_dtype, parse_bool, run_and_log_time)
+                   get_str_dtype, get_torch_dtype, parse_bool,
+                   run_and_log_time,
+                   validate_script_framework_model_dtype_allowed)
 
 
 class QueryID(BaseModel):
@@ -27,6 +29,13 @@ class Args:
         self.allowed_max_new_tokens = int(
             os.getenv("ALLOWED_MAX_NEW_TOKENS", 100))
         self.debug = parse_bool(os.getenv("DEBUG", "false"))
+
+        validate_script_framework_model_dtype_allowed(
+            SERVER,
+            self.deployment_framework,
+            self.model_name,
+            get_str_dtype(self.dtype)
+        )
 
 
 # ------------------------------------------------------

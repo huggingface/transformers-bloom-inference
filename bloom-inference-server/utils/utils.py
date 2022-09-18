@@ -74,12 +74,12 @@ def get_argument_parser() -> argparse.ArgumentParser:
 def get_args(parser: argparse.ArgumentParser, script: str) -> argparse.Namespace:
     args = parser.parse_args()
 
-    assert is_script_framework_model_dtype_allowed(
+    validate_script_framework_model_dtype_allowed(
         script,
         args.deployment_framework,
         args.model_name,
         args.dtype
-    ), f"{script} is not supported with {args.deployment_framework}, {args.model_name} and {args.dtype} dtype"
+    )
 
     args.dtype = get_torch_dtype(args.dtype)
     args.generate_kwargs = json.loads(args.generate_kwargs)
@@ -188,16 +188,17 @@ def pad_ids(arrays, padding, max_length=-1):
     return arrays
 
 
-def is_script_framework_model_dtype_allowed(script: str,
-                                            deployment_framework: str,
-                                            model_name: str,
-                                            dtype: str) -> bool:
+def validate_script_framework_model_dtype_allowed(script: str,
+                                                  deployment_framework: str,
+                                                  model_name: str,
+                                                  dtype: str) -> bool:
     if (script in SCRIPT_FRAMEWORK_MODEL_DTYPE_ALLOWED):
         if (deployment_framework in SCRIPT_FRAMEWORK_MODEL_DTYPE_ALLOWED[script]):
             if (model_name in SCRIPT_FRAMEWORK_MODEL_DTYPE_ALLOWED[script][deployment_framework]):
                 if (dtype in SCRIPT_FRAMEWORK_MODEL_DTYPE_ALLOWED[script][deployment_framework][model_name]):
-                    return True
-    return False
+                    return
+    raise NotImplementedError(
+        f"{script} is not supported with {deployment_framework}, {model_name} and {dtype} dtype")
 
 
 def get_exception_response(query_id: int, method: str, debug: bool = False):
