@@ -29,7 +29,7 @@ class Args:
 
 # ------------------------------------------------------
 args = Args()
-model = get_model_class(args.deployment_framework)
+model = get_model_class(args.deployment_framework)(args)
 query_ids = QueryID()
 app = Flask(__name__)
 # ------------------------------------------------------

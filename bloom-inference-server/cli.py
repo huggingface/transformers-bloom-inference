@@ -22,7 +22,7 @@ def get_args() -> argparse.Namespace:
 def main() -> None:
     args = get_args()
 
-    model = get_model_class(args.deployment_framework)
+    model = get_model_class(args.deployment_framework)(args)
 
     generate_kwargs = args.generate_kwargs
 

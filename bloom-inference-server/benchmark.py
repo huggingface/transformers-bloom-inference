@@ -44,10 +44,10 @@ Model loading time + generation time per batch = {initialization_time + latency:
 
 
 def benchmark_end_to_end(args: argparse.Namespace,
-                         model: Model,
+                         model_class: Model,
                          zero_activated: bool = False) -> None:
     model, initialization_time = run_and_log_time(
-        partial(model, args=args)
+        partial(model_class, args=args)
     )
 
     request = parse_generate_kwargs(
@@ -132,12 +132,12 @@ def get_args() -> argparse.Namespace:
 def main() -> None:
     args = get_args()
 
-    model = get_model_class(args.deployment_framework, True)
+    model_class = get_model_class(args.deployment_framework, True)
 
     if (args.deployment_framework in [DS_INFERENCE, DS_ZERO]):
         deepspeed.init_distributed("nccl")
 
-    benchmark_end_to_end(args, model, args.deployment_framework == DS_ZERO)
+    benchmark_end_to_end(args, model_class, args.deployment_framework == DS_ZERO)
 
 
 if (__name__ == "__main__"):
