@@ -4,6 +4,9 @@ import torch
 from ds_inference import DSInferenceGRPCServer
 from utils import GenerateRequest
 
+import nest_asyncio
+nest_asyncio.apply()
+
 class Args:
     model_name = "microsoft/bloom-deepspeed-inference-fp16"
     dtype = torch.float16
@@ -22,7 +25,8 @@ print(f(r))
 async def g(request):
     return model.generate(request)
 
-loop = asyncio.new_event_loop()
-print(loop.run_until_complete(g(r)))
-loop.close()
+print(asyncio.run(g(r)))
+# loop = asyncio.new_event_loop()
+# print(loop.run_until_complete(g(r)))
+# loop.close()
 # --------------------------------------------------------------------
