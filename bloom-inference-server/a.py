@@ -1,4 +1,5 @@
 import asyncio
+from urllib import request
 import torch
 from ds_inference import DSInferenceGRPCServer
 from utils import GenerateRequest
@@ -9,10 +10,17 @@ class Args:
 
 model = DSInferenceGRPCServer(Args())
 
-async def f(requuest):
-    model.generate(requuest)
+# --------------------------------------------------------------------
+def f(request):
+    return model.generate(request)
+
+r = GenerateRequest(text=["hello"], max_new_tokens=20)
+print(f(r))
+# --------------------------------------------------------------------
+async def g(request):
+    return model.generate(request)
 
 loop = asyncio.new_event_loop()
-r = GenerateRequest(text=["hello"], max_new_tokens=20)
-print(loop.run_until_complete(f(r)))
+print(loop.run_until_complete(g(r)))
 loop.close()
+# --------------------------------------------------------------------
