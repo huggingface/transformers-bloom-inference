@@ -5,7 +5,7 @@ We support HuggingFace accelerate and DeepSpeed Inference for generation.
 Install required packages:
 
 ```shell
-pip install flask flask_api pydantic accelerate huggingface_hub>=0.9.0 deepspeed>=0.7.3
+pip install flask flask_api gunicorn pydantic accelerate huggingface_hub>=0.9.0 deepspeed>=0.7.3
 ```
 To install [DeepSpeed-MII](https://github.com/microsoft/DeepSpeed-MII):
 ```shell
@@ -39,37 +39,37 @@ Example: generate_kwargs =
 
 1. using HF accelerate
 ```shell
-python bloom-inference-server/cli.py --model_name bigscience/bloom --dtype bf16 --deployment_framework hf_accelerate --generate_kwargs '{"min_length": 100, "max_new_tokens": 100, "do_sample": false}'
+python cli.py --model_name bigscience/bloom --dtype bf16 --deployment_framework hf_accelerate --generate_kwargs '{"min_length": 100, "max_new_tokens": 100, "do_sample": false}'
 ```
 
 2. using DS inference
 ```shell
-python bloom-inference-server/cli.py --model_name microsoft/bloom-deepspeed-inference-fp16 --dtype fp16 --deployment_framework ds_inference --generate_kwargs '{"min_length": 100, "max_new_tokens": 100, "do_sample": false}'
+python cli.py --model_name microsoft/bloom-deepspeed-inference-fp16 --dtype fp16 --deployment_framework ds_inference --generate_kwargs '{"min_length": 100, "max_new_tokens": 100, "do_sample": false}'
 ```
 
 #### BLOOM server deployment
 
-[server.sh](server.sh) can be used to launch a generation server. Please not that the serving method is synchronous and users have to wait in queue until the preceding requests have been processed.
+[server.sh](server.sh) can be used to launch a generation server. Please note that the serving method is synchronous and users have to wait in queue until the preceding requests have been processed.
 
 #### Benchmark system for BLOOM inference
 
 1. using HF accelerate
 ```shell
-python bloom-inference-server/benchmark.py --model_name bigscience/bloom --dtype bf16 --deployment_framework hf_accelerate --benchmark_cycles 5
+python benchmark.py --model_name bigscience/bloom --dtype bf16 --deployment_framework hf_accelerate --benchmark_cycles 5
 ```
 
 2. using DS inference
 ```shell
-deepspeed --num_gpus 8 bloom-inference-server/benchmark.py --model_name bigscience/bloom --dtype fp16 --deployment_framework ds_inference --benchmark_cycles 5
+deepspeed --num_gpus 8 benchmark.py --model_name bigscience/bloom --dtype fp16 --deployment_framework ds_inference --benchmark_cycles 5
 ```
 alternatively, to load model faster:
 ```shell
-deepspeed --num_gpus 8 bloom-inference-server/benchmark.py --model_name microsoft/bloom-deepspeed-inference-fp16 --dtype fp16 --deployment_framework ds_inference --benchmark_cycles 5
+deepspeed --num_gpus 8 benchmark.py --model_name microsoft/bloom-deepspeed-inference-fp16 --dtype fp16 --deployment_framework ds_inference --benchmark_cycles 5
 ```
 
 3. using DS ZeRO
 ```shell
-deepspeed --num_gpus 8 bloom-inference-server/benchmark.py --model_name bigscience/bloom --dtype bf16 --deployment_framework ds_zero --benchmark_cycles 5
+deepspeed --num_gpus 8 benchmark.py --model_name bigscience/bloom --dtype bf16 --deployment_framework ds_zero --benchmark_cycles 5
 ```
 
 ## Support
