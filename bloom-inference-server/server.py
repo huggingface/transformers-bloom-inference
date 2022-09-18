@@ -1,4 +1,3 @@
-import json
 import os
 from functools import partial
 
@@ -10,7 +9,7 @@ from requests.exceptions import HTTPError
 from models import get_model_class
 from utils import (HF_ACCELERATE, GenerateRequest, TokenizeRequest,
                    get_exception_response, get_num_tokens_to_generate,
-                   get_torch_dtype, parse_generate_kwargs, run_and_log_time, parse_bool)
+                   get_torch_dtype, run_and_log_time, parse_bool)
 
 
 class QueryID(BaseModel):
@@ -20,14 +19,13 @@ class QueryID(BaseModel):
 
 # placeholder class for getting args. gunicorn does not allow passing args to a
 # python script via ArgumentParser
-class Args:
-    def __init__(self) -> None:
-        self.deployment_framework: str = os.getenv(
-            "DEPLOYMENT_FRAMEWORK", HF_ACCELERATE)
-        self.model_name: str = os.getenv("MODEL_NAME")
-        self.dtype: torch.dtype = get_torch_dtype(os.getenv("DTYPE"))
-        self.allowed_max_new_tokens: os.getenv("ALLOWED_MAX_NEW_TOKENS", 100)
-        self.debug: bool = parse_bool(os.getenv("DEBUG", "false"))
+class Args(BaseModel):
+    deployment_framework: str = os.getenv(
+        "DEPLOYMENT_FRAMEWORK", HF_ACCELERATE)
+    model_name: str = os.getenv("MODEL_NAME")
+    dtype: torch.dtype = get_torch_dtype(os.getenv("DTYPE"))
+    allowed_max_new_tokens: int = os.getenv("ALLOWED_MAX_NEW_TOKENS", 100)
+    debug: bool = parse_bool(os.getenv("DEBUG", "false"))
 
 
 # ------------------------------------------------------
