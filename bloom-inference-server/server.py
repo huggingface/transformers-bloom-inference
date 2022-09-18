@@ -25,14 +25,6 @@ class Args:
         "DEPLOYMENT_FRAMEWORK", HF_ACCELERATE)
     model_name: str = os.getenv("MODEL_NAME")
     dtype: torch.dtype = get_torch_dtype(os.getenv("DTYPE"))
-    generate_kwargs: dict = parse_generate_kwargs(
-        json.loads(
-            os.getenv(
-                "GENERATE_KWARGS",
-                '{"min_length": 100, "max_new_tokens": 100, "do_sample": false}'
-            )
-        )
-    )
 
 
 # ------------------------------------------------------
