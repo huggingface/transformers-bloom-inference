@@ -21,12 +21,13 @@ class QueryID(BaseModel):
 # placeholder class for getting args. gunicorn does not allow passing args to a
 # python script via ArgumentParser
 class Args:
-    deployment_framework: str = os.getenv(
-        "DEPLOYMENT_FRAMEWORK", HF_ACCELERATE)
-    model_name: str = os.getenv("MODEL_NAME")
-    dtype: torch.dtype = get_torch_dtype(os.getenv("DTYPE"))
-    allowed_max_new_tokens: os.getenv("ALLOWED_MAX_NEW_TOKENS", 100)
-    debug: bool = parse_bool(os.getenv("DEBUG", "false"))
+    def __init__(self) -> None:
+        self.deployment_framework: str = os.getenv(
+            "DEPLOYMENT_FRAMEWORK", HF_ACCELERATE)
+        self.model_name: str = os.getenv("MODEL_NAME")
+        self.dtype: torch.dtype = get_torch_dtype(os.getenv("DTYPE"))
+        self.allowed_max_new_tokens: os.getenv("ALLOWED_MAX_NEW_TOKENS", 100)
+        self.debug: bool = parse_bool(os.getenv("DEBUG", "false"))
 
 
 # ------------------------------------------------------
