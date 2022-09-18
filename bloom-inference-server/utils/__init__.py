@@ -5,7 +5,8 @@ from .requests import (
     TokenizeRequest,
     TokenizeResponse,
     get_filter_dict,
-    parse_generate_kwargs
+    parse_generate_kwargs,
+    parse_bool
 )
 from .utils import (
     get_args,

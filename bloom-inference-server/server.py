@@ -7,10 +7,10 @@ from flask import Flask, request
 from pydantic import BaseModel
 from requests.exceptions import HTTPError
 
-from models import HFAccelerateModel, DSInferenceGRPCServer, get_model_class
+from models import get_model_class
 from utils import (HF_ACCELERATE, GenerateRequest, TokenizeRequest,
                    get_exception_response, get_num_tokens_to_generate,
-                   get_torch_dtype, parse_generate_kwargs, run_and_log_time)
+                   get_torch_dtype, parse_generate_kwargs, run_and_log_time, parse_bool)
 
 
 class QueryID(BaseModel):
@@ -26,6 +26,7 @@ class Args:
     model_name: str = os.getenv("MODEL_NAME")
     dtype: torch.dtype = get_torch_dtype(os.getenv("DTYPE"))
     allowed_max_new_tokens: os.getenv("ALLOWED_MAX_NEW_TOKENS", 100)
+    debug: bool = parse_bool(os.getenv("DEBUG", "false"))
 
 
 # ------------------------------------------------------

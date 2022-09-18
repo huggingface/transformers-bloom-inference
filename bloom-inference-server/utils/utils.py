@@ -200,7 +200,7 @@ def is_script_framework_model_dtype_allowed(script: str,
     return False
 
 
-def get_exception_response(self, query_id: int, method: str):
+def get_exception_response(query_id: int, method: str, debug: bool = False):
     e_type, e_message, e_stack_trace = sys.exc_info()
     response = {
         "error": str(e_type.__name__),
@@ -209,7 +209,7 @@ def get_exception_response(self, query_id: int, method: str):
         "method": method
     }
 
-    if (self.debug):
+    if (debug):
         trace_back = traceback.extract_tb(e_stack_trace)
 
         # Format stacktrace
