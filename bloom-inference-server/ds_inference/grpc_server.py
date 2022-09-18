@@ -1,5 +1,4 @@
 import argparse
-import asyncio
 import json
 import os
 
@@ -14,8 +13,7 @@ from utils import (
     get_downloaded_model_path,
     get_filter_dict,
     get_str_dtype,
-    print_rank_n,
-    mii_query_handle
+    print_rank_n
 )
 
 
@@ -52,15 +50,13 @@ class DSInferenceGRPCServer(Model):
             raise NotImplementedError("bfloat16 is not yet supported")
 
         # get the GRPC service launched in the above code
-        self.event_loop = asyncio.get_event_loop()
-        self.model = mii_query_handle(self.deployment_name, self.event_loop)
+        self.model = mii.mii_query_handle(self.deployment_name)
 
     def generate(self, request: GenerateRequest) -> GenerateResponse:
         output_text = self.model.query(
             {"query": request.text},
             **get_filter_dict(request)
-        )
-        output_text = output_text.response
+        ).response
 
         output_text = [_ for _ in output_text]
 

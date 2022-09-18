@@ -2,8 +2,10 @@ import argparse
 import copy
 import json
 import math
+import sys
 import time
 from functools import partial
+import traceback
 from typing import Any, List, Tuple, Union
 
 import torch
@@ -196,3 +198,26 @@ def is_script_framework_model_dtype_allowed(script: str,
                 if (dtype in SCRIPT_FRAMEWORK_MODEL_DTYPE_ALLOWED[script][deployment_framework][model_name]):
                     return True
     return False
+
+
+def get_exception_response(self, query_id: int, method: str):
+    e_type, e_message, e_stack_trace = sys.exc_info()
+    response = {
+        "error": str(e_type.__name__),
+        "message": str(e_message),
+        "query_id": query_id,
+        "method": method
+    }
+
+    if (self.debug):
+        trace_back = traceback.extract_tb(e_stack_trace)
+
+        # Format stacktrace
+        stack_trace = []
+        for trace in trace_back:
+            stack_trace.append("File : {}, Line : {}, Func.Name : {}, Message : {}".format(
+                trace[0], trace[1], trace[2], trace[3]))
+
+        response["stack_trace"] = stack_trace
+
+    return response
