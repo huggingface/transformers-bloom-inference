@@ -189,8 +189,6 @@ class MIIServerClient(mii.MIIServerClient):
             ret = f"{response}"
         else:
             assert self.initialize_grpc_client, "grpc client has not been setup when this model was created"
-            response = self.asyncio_loop.run_until_complete(
-                self._query_in_tensor_parallel(request_dict,
-                                               query_kwargs))
+            response = await self._query_in_tensor_parallel(request_dict, query_kwargs)
             ret = response.result()
         return ret
