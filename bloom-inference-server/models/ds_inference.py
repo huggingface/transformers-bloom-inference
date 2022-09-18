@@ -11,9 +11,10 @@ import mii
 import torch
 import torch.distributed as dist
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
-from utils import (GenerateRequest, GenerateResponse, Model,
-                   get_downloaded_model_path, get_filter_dict, get_str_dtype,
-                   print_rank_n, run_rank_n)
+from utils import (GenerateRequest, GenerateResponse, get_filter_dict,
+                   get_str_dtype, print_rank_n, run_rank_n)
+
+from .model import Model, get_downloaded_model_path
 
 
 # basic DeepSpeed inference model class for benchmarking
