@@ -29,7 +29,7 @@ class Args:
         json.loads(
             os.getenv(
                 "GENERATE_KWARGS",
-                '{"min_length": 100, "max_new_tokens": 100, "do_sample": False}'
+                '{"min_length": 100, "max_new_tokens": 100, "do_sample": false}'
             )
         )
     )
