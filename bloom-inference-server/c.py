@@ -23,7 +23,7 @@ async def g(request):
 for i in range(100):
     s = time.time()
     print(asyncio.run(g(r)))
-    print(time.time() - s, "a")
+    print(time.time() - s, "c")
 # loop = asyncio.new_event_loop()
 # print(loop.run_until_complete(g(r)))
 # loop.close()
