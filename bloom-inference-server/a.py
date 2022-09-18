@@ -14,5 +14,5 @@ async def f(requuest):
 
 loop = asyncio.new_event_loop()
 r = GenerateRequest(text=["hello"], max_new_tokens=20)
-print(loop.run_until_complete(r()))
+print(loop.run_until_complete(r))
 loop.close()
