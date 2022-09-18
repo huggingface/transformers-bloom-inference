@@ -25,7 +25,7 @@ class Args:
             "DEPLOYMENT_FRAMEWORK", HF_ACCELERATE)
         self.model_name = os.getenv("MODEL_NAME")
         self.dtype = get_torch_dtype(os.getenv("DTYPE"))
-        self.allowed_max_new_tokens = os.getenv("ALLOWED_MAX_NEW_TOKENS", 100)
+        self.allowed_max_new_tokens = int(os.getenv("ALLOWED_MAX_NEW_TOKENS", 100))
         self.debug = parse_bool(os.getenv("DEBUG", "false"))
 
 
