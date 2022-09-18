@@ -4,7 +4,6 @@ from functools import partial
 from flask import Flask, request
 from flask_api import status
 from pydantic import BaseModel
-from requests import HTTPError
 
 from models import get_model_class
 from utils import (HF_ACCELERATE, GenerateRequest, TokenizeRequest,
@@ -63,7 +62,7 @@ def tokenize():
         response = get_exception_response(
             query_ids.tokenize_query_id, x.method)
         query_ids.tokenize_query_id += 1
-        raise HTTPError(response)
+        return response, status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
 @app.route("/generate/", methods=["POST"])
@@ -89,4 +88,4 @@ def generate():
         response = get_exception_response(
             query_ids.generate_query_id, x.method)
         query_ids.generate_query_id += 1
-        raise HTTPError(response)
+        return response, status.HTTP_500_INTERNAL_SERVER_ERROR
