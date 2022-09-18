@@ -125,9 +125,10 @@ class Server:
 
         return response
 
-    async def generate(self, request: GenerateRequest) -> GenerateResponse:
+    def generate(self, request: GenerateRequest) -> GenerateResponse:
         try:
-            return self.event_loop.run_until_complete(self.generate_(request))
+            task = self.event_loop.create_task(self.generate_(request))
+            return self.event_loop.run_until_complete(task)
         except Exception:
             response = self.get_exception_response(
                 self.query_ids.generate_query_id, request.method)
