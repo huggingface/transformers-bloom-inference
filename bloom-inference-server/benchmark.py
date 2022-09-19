@@ -5,12 +5,18 @@ from functools import partial
 
 import deepspeed
 import torch
-
 import utils
-from models import Model, get_model_class
-from utils import (BENCHMARK, DS_INFERENCE, DS_ZERO, GenerateRequest,
-                   get_argument_parser, get_dummy_batch, parse_generate_kwargs,
-                   print_rank_n, run_and_log_time)
+from models import Model
+from models import get_model_class
+from utils import BENCHMARK
+from utils import DS_INFERENCE
+from utils import DS_ZERO
+from utils import GenerateRequest
+from utils import get_argument_parser
+from utils import get_dummy_batch
+from utils import parse_generate_kwargs
+from utils import print_rank_n
+from utils import run_and_log_time
 
 
 def benchmark_generation(model: Model,
@@ -137,7 +143,8 @@ def main() -> None:
     if (args.deployment_framework in [DS_INFERENCE, DS_ZERO]):
         deepspeed.init_distributed("nccl")
 
-    benchmark_end_to_end(args, model_class, args.deployment_framework == DS_ZERO)
+    benchmark_end_to_end(
+        args, model_class, args.deployment_framework == DS_ZERO)
 
 
 if (__name__ == "__main__"):

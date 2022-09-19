@@ -4,22 +4,23 @@ import json
 import math
 import sys
 import time
-from functools import partial
 import traceback
-from typing import Any, List, Tuple, Union
+from functools import partial
+from typing import Any
+from typing import List
+from typing import Tuple
+from typing import Union
 
 import torch
 import torch.distributed as dist
 
-from .constants import (
-    BIGSCIENCE_BLOOM,
-    DS_INFERENCE,
-    DS_INFERENCE_BLOOM_FP16,
-    DS_INFERENCE_BLOOM_INT8,
-    DS_ZERO,
-    HF_ACCELERATE,
-    SCRIPT_FRAMEWORK_MODEL_DTYPE_ALLOWED
-)
+from .constants import BIGSCIENCE_BLOOM
+from .constants import DS_INFERENCE
+from .constants import DS_INFERENCE_BLOOM_FP16
+from .constants import DS_INFERENCE_BLOOM_INT8
+from .constants import DS_ZERO
+from .constants import HF_ACCELERATE
+from .constants import SCRIPT_FRAMEWORK_MODEL_DTYPE_ALLOWED
 
 # used for benchmarks
 dummy_input_sentences = [

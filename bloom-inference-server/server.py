@@ -1,16 +1,22 @@
 import os
 from functools import partial
 
-from flask import Flask, request
+from flask import Flask
+from flask import request
 from flask_api import status
-from pydantic import BaseModel
-
 from models import get_model_class
-from utils import (HF_ACCELERATE, SERVER, GenerateRequest, TokenizeRequest,
-                   get_exception_response, get_num_tokens_to_generate,
-                   get_str_dtype, get_torch_dtype, parse_bool,
-                   run_and_log_time,
-                   validate_script_framework_model_dtype_allowed)
+from pydantic import BaseModel
+from utils import HF_ACCELERATE
+from utils import SERVER
+from utils import GenerateRequest
+from utils import TokenizeRequest
+from utils import get_exception_response
+from utils import get_num_tokens_to_generate
+from utils import get_str_dtype
+from utils import get_torch_dtype
+from utils import parse_bool
+from utils import run_and_log_time
+from utils import validate_script_framework_model_dtype_allowed
 
 
 class QueryID(BaseModel):

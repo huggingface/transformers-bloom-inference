@@ -4,7 +4,10 @@ import sys
 
 import utils
 from models import get_model_class
-from utils import CLI, get_argument_parser, parse_generate_kwargs, print_rank_n
+from utils import CLI
+from utils import get_argument_parser
+from utils import parse_generate_kwargs
+from utils import print_rank_n
 
 
 def get_args() -> argparse.Namespace:

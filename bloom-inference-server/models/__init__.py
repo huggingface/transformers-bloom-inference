@@ -1,6 +1,9 @@
-from utils import DS_INFERENCE, DS_ZERO, HF_ACCELERATE
+from utils import DS_INFERENCE
+from utils import DS_ZERO
+from utils import HF_ACCELERATE
 
-from .ds_inference import DSInferenceGRPCServer, DSInferenceModel
+from .ds_inference import DSInferenceGRPCServer
+from .ds_inference import DSInferenceModel
 from .ds_zero import DSZeROModel
 from .hf_accelerate import HFAccelerateModel
 from .model import Model
