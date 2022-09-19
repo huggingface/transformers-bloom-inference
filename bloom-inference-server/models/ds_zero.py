@@ -1,9 +1,10 @@
 import os
 from argparse import Namespace
 
-import deepspeed
 import torch
 import torch.distributed as dist
+
+import deepspeed
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
 from transformers.deepspeed import HfDeepSpeedConfig
 from utils import print_rank_n
@@ -19,7 +20,7 @@ class DSZeROModel(Model):
 
         config = AutoConfig.from_pretrained(downloaded_model_path)
 
-        world_size = int(os.getenv('WORLD_SIZE', '1'))
+        world_size = int(os.getenv("WORLD_SIZE", "1"))
         train_batch_size = 1 * world_size
 
         # try playing with these parameters, might improve throughput for you
@@ -37,19 +38,16 @@ class DSZeROModel(Model):
                 "contiguous_gradients": True,
                 "reduce_bucket_size": config.hidden_size * config.hidden_size,
                 "stage3_prefetch_bucket_size": 0.9 * config.hidden_size * config.hidden_size,
-                "stage3_param_persistence_threshold": 0
+                "stage3_param_persistence_threshold": 0,
             },
             "steps_per_print": 2000,
             "train_batch_size": train_batch_size,
             "train_micro_batch_size_per_gpu": 1,
-            "wall_clock_breakdown": False
+            "wall_clock_breakdown": False,
         }
 
-        if (args.cpu_offload):
-            ds_config["zero_optimization"]["offload_param"] = {
-                "device": "cpu",
-                "pin_memory": True
-            }
+        if args.cpu_offload:
+            ds_config["zero_optimization"]["offload_param"] = {"device": "cpu", "pin_memory": True}
 
         # this tells from_pretrained to instantiate directly on gpus
         dschf = HfDeepSpeedConfig(ds_config)
@@ -57,13 +55,11 @@ class DSZeROModel(Model):
         self.tokenizer = AutoTokenizer.from_pretrained(downloaded_model_path)
         self.pad = self.tokenizer.pad_token_id
 
-        self.model = AutoModelForCausalLM.from_pretrained(
-            downloaded_model_path, torch_dtype=args.dtype)
+        self.model = AutoModelForCausalLM.from_pretrained(downloaded_model_path, torch_dtype=args.dtype)
         self.model = self.model.eval()
 
         # convert model to a fully sharded model using ZeRO
-        self.model = deepspeed.initialize(
-            model=self.model, config_params=ds_config)[0]
+        self.model = deepspeed.initialize(model=self.model, config_params=ds_config)[0]
 
         self.model.module.eval()
         self.model = self.model.module

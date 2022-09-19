@@ -15,21 +15,20 @@
 #
 
 
-from argparse import ArgumentParser
-from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig
-from transformers.deepspeed import HfDeepSpeedConfig
-from transformers.models.bloom.modeling_bloom import BloomBlock as BloomBlock
-import deepspeed
 import gc
-import glob
-import io
-import json
 import math
 import os
-import sys
 import time
+from argparse import ArgumentParser
+
 import torch
 import torch.distributed as dist
+
+import deepspeed
+from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
+from transformers.deepspeed import HfDeepSpeedConfig
+from transformers.models.bloom.modeling_bloom import BloomBlock as BloomBlock
+
 
 t_start = time.time()
 
@@ -45,15 +44,18 @@ parser.add_argument("--cpu_offload", action="store_true", help="whether to activ
 parser.add_argument("--nvme_offload_path", help="whether to activate NVME offload and the path on nvme")
 args = parser.parse_args()
 
-local_rank = int(os.getenv('LOCAL_RANK', '0'))
-world_size = int(os.getenv('WORLD_SIZE', '1'))
+local_rank = int(os.getenv("LOCAL_RANK", "0"))
+world_size = int(os.getenv("WORLD_SIZE", "1"))
 
-deepspeed.init_distributed('nccl')
+deepspeed.init_distributed("nccl")
 rank = dist.get_rank()
 
+
 def print_rank0(*msg):
-    if rank != 0: return
+    if rank != 0:
+        return
     print(*msg)
+
 
 ### Model loading and instantiating on GPU (via ZeRO)
 
@@ -83,22 +85,19 @@ ds_config = {
         "contiguous_gradients": True,
         "reduce_bucket_size": model_hidden_size * model_hidden_size,
         "stage3_prefetch_bucket_size": 0.9 * model_hidden_size * model_hidden_size,
-        "stage3_param_persistence_threshold": 0
+        "stage3_param_persistence_threshold": 0,
     },
     "steps_per_print": 2000,
     "train_batch_size": train_batch_size,
     "train_micro_batch_size_per_gpu": 1,
-    "wall_clock_breakdown": False
+    "wall_clock_breakdown": False,
 }
 
 if args.cpu_offload and args.nvme_offload_path:
     raise ValueError("Use one of --cpu_offload or --nvme_offload_path and not both")
 
 if args.cpu_offload:
-    ds_config["zero_optimization"]["offload_param"] = dict(
-        device="cpu",
-        pin_memory=True
-    )
+    ds_config["zero_optimization"]["offload_param"] = dict(device="cpu", pin_memory=True)
 
 if args.nvme_offload_path:
     ds_config["zero_optimization"]["offload_param"] = dict(
@@ -108,17 +107,17 @@ if args.nvme_offload_path:
         buffer_size=4e9,
     )
 
-dschf = HfDeepSpeedConfig(ds_config) # this tells from_pretrained to instantiate directly on gpus
+dschf = HfDeepSpeedConfig(ds_config)  # this tells from_pretrained to instantiate directly on gpus
 
 if args.benchmark:
     torch.cuda.empty_cache()
     gc.collect()
-    deepspeed.runtime.utils.see_memory_usage('pre-from-pretrained', force=True)
+    deepspeed.runtime.utils.see_memory_usage("pre-from-pretrained", force=True)
 
 model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16)
 
 if args.benchmark:
-    deepspeed.runtime.utils.see_memory_usage('post-from-pretrained', force=True)
+    deepspeed.runtime.utils.see_memory_usage("post-from-pretrained", force=True)
 
 model = model.eval()
 
@@ -130,7 +129,7 @@ model = ds_engine.module
 
 if args.benchmark:
     t_ready = time.time()
-    deepspeed.runtime.utils.see_memory_usage('start-of-generate', force=True)
+    deepspeed.runtime.utils.see_memory_usage("start-of-generate", force=True)
 
 
 ### Generate
@@ -145,7 +144,7 @@ input_sentences = [
     "Everyone is happy and I can",
     "The new movie that got Oscar this year",
     "In the far far distance from our galaxy,",
-    "Peace is the only way"
+    "Peace is the only way",
 ]
 
 if args.batch_size > len(input_sentences):
@@ -155,9 +154,11 @@ if args.batch_size > len(input_sentences):
 generate_kwargs = dict(max_new_tokens=num_tokens, do_sample=False)
 
 print_rank0(f"Generate args {generate_kwargs}")
-inputs = input_sentences[:args.batch_size]
+inputs = input_sentences[: args.batch_size]
+
+
 def generate():
-    """ returns a list of zipped inputs, outputs and number of new tokens """
+    """returns a list of zipped inputs, outputs and number of new tokens"""
 
     input_tokens = tokenizer.batch_encode_plus(inputs, return_tensors="pt", padding=True)
     for t in input_tokens:
@@ -169,10 +170,11 @@ def generate():
     input_tokens_lengths = [x.shape[0] for x in input_tokens.input_ids]
     output_tokens_lengths = [x.shape[0] for x in outputs]
 
-    total_new_tokens = [o-i for i,o in zip(input_tokens_lengths, output_tokens_lengths)]
+    total_new_tokens = [o - i for i, o in zip(input_tokens_lengths, output_tokens_lengths)]
     outputs = tokenizer.batch_decode(outputs, skip_special_tokens=True)
 
     return zip(inputs, outputs, total_new_tokens)
+
 
 # XXX: this is currently doing world_size streams on world_size gpus, so we can feed it different inputs on each! and hence the time can be divided by world_size
 
@@ -180,7 +182,7 @@ print_rank0(f"*** Running generate")
 t_generate_start = time.time()
 pairs = generate()
 t_generate_span = time.time() - t_generate_start
-for i,o,_ in pairs:
+for i, o, _ in pairs:
     print_rank0(f"{'-'*60}\nin={i}\nout={o}\n")
 
 
@@ -190,7 +192,7 @@ if args.benchmark:
     # clear cache / free memory
     torch.cuda.empty_cache()
     gc.collect()
-    deepspeed.runtime.utils.see_memory_usage('end-of-generate', force=True)
+    deepspeed.runtime.utils.see_memory_usage("end-of-generate", force=True)
 
     print_rank0(f"*** Running benchmark")
 
@@ -205,16 +207,18 @@ if args.benchmark:
     total_new_tokens_generated = 0
     for i in range(cycles):
         generated = generate()
-        total_new_tokens_generated += sum(new_tokens for _,_,new_tokens in generated)
+        total_new_tokens_generated += sum(new_tokens for _, _, new_tokens in generated)
 
     torch.cuda.synchronize()
     # note that we actually generate world_size unique streams (though the benchmark feeds the same inputs)
-    total_new_tokens_generated *=  world_size
-    througput = (time.time() - t0)/(total_new_tokens_generated)
-    print_rank0(f"""
+    total_new_tokens_generated *= world_size
+    througput = (time.time() - t0) / (total_new_tokens_generated)
+    print_rank0(
+        f"""
 *** Performance stats:
 Throughput per token including tokenize: {througput*1000:.2f} msecs
 Start to ready to generate: {t_ready - t_start:.3f} secs
 Tokenize and generate {total_new_tokens_generated} (bs={args.batch_size}) tokens: {t_generate_span:.3f} secs
 Start to finish: {t_ready - t_start + t_generate_span:.3f} secs
-""")
+"""
+    )

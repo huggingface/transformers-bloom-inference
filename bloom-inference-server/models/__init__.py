@@ -7,15 +7,14 @@ from .model import Model
 
 
 def get_model_class(deployment_framework: str, basic: bool = False):
-    if (deployment_framework == HF_ACCELERATE):
+    if deployment_framework == HF_ACCELERATE:
         return HFAccelerateModel
-    elif (deployment_framework == DS_INFERENCE):
-        if (basic):
+    elif deployment_framework == DS_INFERENCE:
+        if basic:
             return DSInferenceModel
         else:
             return DSInferenceGRPCServer
-    elif (deployment_framework == DS_ZERO):
+    elif deployment_framework == DS_ZERO:
         return DSZeROModel
     else:
-        raise ValueError(
-            f"Unknown deployment framework {deployment_framework}")
+        raise ValueError(f"Unknown deployment framework {deployment_framework}")

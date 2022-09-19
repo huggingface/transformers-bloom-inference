@@ -23,30 +23,9 @@ INT8 = "int8"
 # present in the dictionary, it is allowed otherwise an error is thrown
 SCRIPT_FRAMEWORK_MODEL_DTYPE_ALLOWED = {
     BENCHMARK: {
-        HF_ACCELERATE: {
-            BIGSCIENCE_BLOOM: {
-                BF16,
-                FP16,
-                INT8
-            }
-        },
-        DS_INFERENCE: {
-            BIGSCIENCE_BLOOM: {
-                FP16
-            },
-            DS_INFERENCE_BLOOM_FP16: {
-                FP16
-            },
-            DS_INFERENCE_BLOOM_INT8: {
-                INT8
-            }
-        },
-        DS_ZERO: {
-            BIGSCIENCE_BLOOM: {
-                BF16,
-                FP16
-            }
-        }
+        HF_ACCELERATE: {BIGSCIENCE_BLOOM: {BF16, FP16, INT8}},
+        DS_INFERENCE: {BIGSCIENCE_BLOOM: {FP16}, DS_INFERENCE_BLOOM_FP16: {FP16}, DS_INFERENCE_BLOOM_INT8: {INT8}},
+        DS_ZERO: {BIGSCIENCE_BLOOM: {BF16, FP16}},
     },
     CLI: {
         HF_ACCELERATE: {
@@ -56,14 +35,7 @@ SCRIPT_FRAMEWORK_MODEL_DTYPE_ALLOWED = {
                 # INT8
             }
         },
-        DS_INFERENCE: {
-            DS_INFERENCE_BLOOM_FP16: {
-                FP16
-            },
-            DS_INFERENCE_BLOOM_INT8: {
-                INT8
-            }
-        }
+        DS_INFERENCE: {DS_INFERENCE_BLOOM_FP16: {FP16}, DS_INFERENCE_BLOOM_INT8: {INT8}},
     },
     SERVER: {
         HF_ACCELERATE: {
@@ -73,13 +45,6 @@ SCRIPT_FRAMEWORK_MODEL_DTYPE_ALLOWED = {
                 # INT8
             }
         },
-        DS_INFERENCE: {
-            DS_INFERENCE_BLOOM_FP16: {
-                FP16
-            },
-            DS_INFERENCE_BLOOM_INT8: {
-                INT8
-            }
-        }
-    }
+        DS_INFERENCE: {DS_INFERENCE_BLOOM_FP16: {FP16}, DS_INFERENCE_BLOOM_INT8: {INT8}},
+    },
 }
