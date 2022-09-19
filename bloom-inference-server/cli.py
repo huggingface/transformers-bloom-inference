@@ -3,9 +3,8 @@ import json
 import sys
 
 import utils
-from ds_inference import DSInferenceGRPCServer
-from hf_accelerate import HFAccelerateModel
-from utils import CLI, DS_INFERENCE, HF_ACCELERATE, get_argument_parser, parse_generate_kwargs, print_rank_n
+from models import get_model_class
+from utils import CLI, get_argument_parser, parse_generate_kwargs, print_rank_n
 
 
 def get_args() -> argparse.Namespace:
@@ -23,13 +22,7 @@ def get_args() -> argparse.Namespace:
 def main() -> None:
     args = get_args()
 
-    if (args.deployment_framework == HF_ACCELERATE):
-        model = HFAccelerateModel(args)
-    elif (args.deployment_framework == DS_INFERENCE):
-        model = DSInferenceGRPCServer(args)
-    else:
-        raise ValueError(
-            f"Unknown deployment framework {args.deployment_framework}")
+    model = get_model_class(args.deployment_framework)(args)
 
     generate_kwargs = args.generate_kwargs
 

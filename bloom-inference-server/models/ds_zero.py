@@ -6,8 +6,9 @@ import torch
 import torch.distributed as dist
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
 from transformers.deepspeed import HfDeepSpeedConfig
+from utils import print_rank_n
 
-from utils import Model, get_downloaded_model_path, print_rank_n
+from .model import Model, get_downloaded_model_path
 
 
 class DSZeROModel(Model):

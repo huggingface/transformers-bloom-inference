@@ -7,22 +7,10 @@ import deepspeed
 import torch
 
 import utils
-from ds_inference import DSInferenceModel
-from ds_zero import DSZeROModel
-from hf_accelerate import HFAccelerateModel
-from utils import (
-    BENCHMARK,
-    DS_INFERENCE,
-    DS_ZERO,
-    HF_ACCELERATE,
-    GenerateRequest,
-    Model,
-    get_argument_parser,
-    get_dummy_batch,
-    parse_generate_kwargs,
-    print_rank_n,
-    run_and_log_time
-)
+from models import Model, get_model_class
+from utils import (BENCHMARK, DS_INFERENCE, DS_ZERO, GenerateRequest,
+                   get_argument_parser, get_dummy_batch, parse_generate_kwargs,
+                   print_rank_n, run_and_log_time)
 
 
 def benchmark_generation(model: Model,
@@ -144,17 +132,12 @@ def get_args() -> argparse.Namespace:
 def main() -> None:
     args = get_args()
 
-    if (args.deployment_framework == HF_ACCELERATE):
-        benchmark_end_to_end(args, HFAccelerateModel)
-    elif (args.deployment_framework == DS_INFERENCE):
+    model_class = get_model_class(args.deployment_framework, True)
+
+    if (args.deployment_framework in [DS_INFERENCE, DS_ZERO]):
         deepspeed.init_distributed("nccl")
-        benchmark_end_to_end(args, DSInferenceModel)
-    elif (args.deployment_framework == DS_ZERO):
-        deepspeed.init_distributed("nccl")
-        benchmark_end_to_end(args, DSZeROModel, zero_activated=True)
-    else:
-        raise ValueError(
-            f"Unknown deployment framework {args.deployment_framework}")
+
+    benchmark_end_to_end(args, model_class, args.deployment_framework == DS_ZERO)
 
 
 if (__name__ == "__main__"):

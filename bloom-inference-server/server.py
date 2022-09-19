@@ -1,27 +1,16 @@
-import argparse
-import sys
-import traceback
+import os
 from functools import partial
 
-import utils
-from ds_inference import DSInferenceGRPCServer
-from fastapi import FastAPI, HTTPException
-from fastapi.routing import APIRoute
-from hf_accelerate import HFAccelerateModel
+from flask import Flask, request
+from flask_api import status
 from pydantic import BaseModel
-from utils import (
-    DS_INFERENCE,
-    HF_ACCELERATE,
-    SERVER,
-    GenerateRequest,
-    GenerateResponse,
-    TokenizeRequest,
-    TokenizeResponse,
-    get_argument_parser,
-    get_num_tokens_to_generate,
-    run_and_log_time
-)
-from uvicorn import run
+
+from models import get_model_class
+from utils import (HF_ACCELERATE, SERVER, GenerateRequest, TokenizeRequest,
+                   get_exception_response, get_num_tokens_to_generate,
+                   get_str_dtype, get_torch_dtype, parse_bool,
+                   run_and_log_time,
+                   validate_script_framework_model_dtype_allowed)
 
 
 class QueryID(BaseModel):
@@ -29,148 +18,83 @@ class QueryID(BaseModel):
     tokenize_query_id: int = 0
 
 
-def get_args() -> argparse.Namespace:
-    parser = get_argument_parser()
+# placeholder class for getting args. gunicorn does not allow passing args to a
+# python script via ArgumentParser
+class Args:
+    def __init__(self) -> None:
+        self.deployment_framework = os.getenv(
+            "DEPLOYMENT_FRAMEWORK", HF_ACCELERATE)
+        self.model_name = os.getenv("MODEL_NAME")
+        self.dtype = get_torch_dtype(os.getenv("DTYPE"))
+        self.allowed_max_new_tokens = int(
+            os.getenv("ALLOWED_MAX_NEW_TOKENS", 100))
+        self.debug = parse_bool(os.getenv("DEBUG", "false"))
 
-    group = parser.add_argument_group(title="launch config")
-    group.add_argument("--host", type=str, required=True, help="host address")
-    group.add_argument("--port", type=int, required=True, help="port number")
-    group.add_argument("--workers", type=int, default=1,
-                       help="number of http workers")
-    group.add_argument("--allowed_max_new_tokens", type=int,
-                       default=100, help="max allowed tokens")
-    group.add_argument("--debug", action="store_true",
-                       help="launch in debug mode")
-
-    args = utils.get_args(parser, SERVER)
-
-    return args
-
-
-class Server:
-    def __init__(self, args: argparse.Namespace):
-        self.host = args.host
-        self.port = args.port
-        self.workers = args.workers
-        self.debug = args.debug
-
-        self.allowed_max_new_tokens = args.allowed_max_new_tokens
-        self.query_ids = QueryID()
-
-        if (args.deployment_framework == HF_ACCELERATE):
-            self.model = HFAccelerateModel(args)
-        elif (args.deployment_framework == DS_INFERENCE):
-            self.model = DSInferenceGRPCServer(args)
-        else:
-            raise ValueError(
-                f"Unknown deployment framework {args.deployment_framework}")
-
-        self.app = FastAPI(
-            routes=[
-                APIRoute(
-                    "/generate/",
-                    self.generate,
-                    methods=["POST"],
-                ),
-                APIRoute(
-                    "/tokenize/",
-                    self.tokenize,
-                    methods=["POST"],
-                ),
-                APIRoute(
-                    "/query_id/",
-                    self.query_id,
-                    methods=["GET"],
-                )
-            ],
-            timeout=600,
+        validate_script_framework_model_dtype_allowed(
+            SERVER,
+            self.deployment_framework,
+            self.model_name,
+            get_str_dtype(self.dtype)
         )
 
-    def get_exception_response(self, query_id: int, method: str):
-        e_type, e_message, e_stack_trace = sys.exc_info()
-        response = {
-            "error": str(e_type.__name__),
-            "message": str(e_message),
-            "query_id": query_id,
-            "method": method
-        }
 
-        if (self.debug):
-            trace_back = traceback.extract_tb(e_stack_trace)
-
-            # Format stacktrace
-            stack_trace = []
-            for trace in trace_back:
-                stack_trace.append("File : {}, Line : {}, Func.Name : {}, Message : {}".format(
-                    trace[0], trace[1], trace[2], trace[3]))
-
-            response["stack_trace"] = stack_trace
-
-        return response
-
-    def generate(self, request: GenerateRequest) -> GenerateResponse:
-        try:
-            request.preprocess()
-
-            request.max_new_tokens = get_num_tokens_to_generate(
-                request.max_new_tokens, self.allowed_max_new_tokens)
-
-            response, total_time_taken = run_and_log_time(
-                partial(self.model.generate, request=request)
-            )
-
-            response.query_id = self.query_ids.generate_query_id
-            self.query_ids.generate_query_id += 1
-            response.total_time_taken = "{:.2f} secs".format(total_time_taken)
-
-            return response
-        except Exception:
-            response = self.get_exception_response(
-                self.query_ids.generate_query_id, request.method)
-            self.query_ids.generate_query_id += 1
-            raise HTTPException(500, response)
-
-    def tokenize(self, request: TokenizeRequest) -> TokenizeResponse:
-        try:
-            response, total_time_taken = run_and_log_time(
-                partial(self.model.tokenize, request=request)
-            )
-
-            response.query_id = self.query_ids.tokenize_query_id
-            self.query_ids.tokenize_query_id += 1
-            response.total_time_taken = "{:.2f} msecs".format(
-                total_time_taken * 1000)
-
-            return response
-        except Exception:
-            response = self.get_exception_response(
-                self.query_ids.tokenize_query_id, request.method)
-            self.query_ids.tokenize_query_id += 1
-            raise HTTPException(500, response)
-
-    def query_id(self) -> QueryID:
-        return self.query_ids
-
-    def run(self):
-        run(
-            self.app,
-            host=self.host,
-            port=self.port,
-            workers=self.workers
-        )
-
-    def shutdown(self):
-        self.model.shutdown()
+# ------------------------------------------------------
+args = Args()
+model = get_model_class(args.deployment_framework)(args)
+query_ids = QueryID()
+app = Flask(__name__)
+# ------------------------------------------------------
 
 
-def main() -> None:
-    args = get_args()
-    server = Server(args)
+@app.route("/query_id/", methods=["GET"])
+def query_id():
+    return query_ids.dict(), status.HTTP_200_OK
+
+
+@app.route("/tokenize/", methods=["POST"])
+def tokenize():
     try:
-        server.run()
-    except KeyboardInterrupt:
-        server.shutdown()
+        x = request.get_json()
+        x = TokenizeRequest(**x)
+
+        response, total_time_taken = run_and_log_time(
+            partial(model.tokenize, request=x)
+        )
+
+        response.query_id = query_ids.tokenize_query_id
+        query_ids.tokenize_query_id += 1
+        response.total_time_taken = "{:.2f} msecs".format(
+            total_time_taken * 1000)
+
+        return response.dict(), status.HTTP_200_OK
+    except Exception:
+        response = get_exception_response(
+            query_ids.tokenize_query_id, x.method)
+        query_ids.tokenize_query_id += 1
+        return response, status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
-if (__name__ == "__main__"):
-    main()
+@app.route("/generate/", methods=["POST"])
+def generate():
+    try:
+        x = request.get_json()
+        x = GenerateRequest(**x)
+        x.preprocess()
+
+        x.max_new_tokens = get_num_tokens_to_generate(
+            x.max_new_tokens, args.allowed_max_new_tokens)
+
+        response, total_time_taken = run_and_log_time(
+            partial(model.generate, request=x)
+        )
+
+        response.query_id = query_ids.generate_query_id
+        query_ids.generate_query_id += 1
+        response.total_time_taken = "{:.2f} secs".format(total_time_taken)
+
+        return response.dict(), status.HTTP_200_OK
+    except Exception:
+        response = get_exception_response(
+            query_ids.generate_query_id, x.method)
+        query_ids.generate_query_id += 1
+        return response, status.HTTP_500_INTERNAL_SERVER_ERROR

@@ -2,8 +2,10 @@ import argparse
 import copy
 import json
 import math
+import sys
 import time
 from functools import partial
+import traceback
 from typing import Any, List, Tuple, Union
 
 import torch
@@ -72,12 +74,12 @@ def get_argument_parser() -> argparse.ArgumentParser:
 def get_args(parser: argparse.ArgumentParser, script: str) -> argparse.Namespace:
     args = parser.parse_args()
 
-    assert is_script_framework_model_dtype_allowed(
+    validate_script_framework_model_dtype_allowed(
         script,
         args.deployment_framework,
         args.model_name,
         args.dtype
-    ), f"{script} is not supported with {args.deployment_framework}, {args.model_name} and {args.dtype} dtype"
+    )
 
     args.dtype = get_torch_dtype(args.dtype)
     args.generate_kwargs = json.loads(args.generate_kwargs)
@@ -186,13 +188,37 @@ def pad_ids(arrays, padding, max_length=-1):
     return arrays
 
 
-def is_script_framework_model_dtype_allowed(script: str,
-                                            deployment_framework: str,
-                                            model_name: str,
-                                            dtype: str) -> bool:
+def validate_script_framework_model_dtype_allowed(script: str,
+                                                  deployment_framework: str,
+                                                  model_name: str,
+                                                  dtype: str) -> bool:
     if (script in SCRIPT_FRAMEWORK_MODEL_DTYPE_ALLOWED):
         if (deployment_framework in SCRIPT_FRAMEWORK_MODEL_DTYPE_ALLOWED[script]):
             if (model_name in SCRIPT_FRAMEWORK_MODEL_DTYPE_ALLOWED[script][deployment_framework]):
                 if (dtype in SCRIPT_FRAMEWORK_MODEL_DTYPE_ALLOWED[script][deployment_framework][model_name]):
-                    return True
-    return False
+                    return
+    raise NotImplementedError(
+        f"{script} is not supported with {deployment_framework}, {model_name} and {dtype} dtype")
+
+
+def get_exception_response(query_id: int, method: str, debug: bool = False):
+    e_type, e_message, e_stack_trace = sys.exc_info()
+    response = {
+        "error": str(e_type.__name__),
+        "message": str(e_message),
+        "query_id": query_id,
+        "method": method
+    }
+
+    if (debug):
+        trace_back = traceback.extract_tb(e_stack_trace)
+
+        # Format stacktrace
+        stack_trace = []
+        for trace in trace_back:
+            stack_trace.append("File : {}, Line : {}, Func.Name : {}, Message : {}".format(
+                trace[0], trace[1], trace[2], trace[3]))
+
+        response["stack_trace"] = stack_trace
+
+    return response
