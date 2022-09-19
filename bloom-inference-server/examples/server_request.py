@@ -23,40 +23,24 @@ def generate(url: str) -> None:
             "DeepSpeed is a machine",
             "DeepSpeed is a machine learning framework",
         ],
-        "max_new_tokens": 40
+        "max_new_tokens": 40,
     }
-    response = requests.post(
-        url=url,
-        json=request_body,
-        verify=False
-    )
+    response = requests.post(url=url, json=request_body, verify=False)
     print(response.json(), "\n")
 
 
 def tokenize(url: str) -> None:
     url = url + "/tokenize/"
 
-    request_body = {
-        "text": [
-            "DeepSpeed is a",
-            "DeepSpeed is a machine learning framework"
-        ]
-    }
-    response = requests.post(
-        url=url,
-        json=request_body,
-        verify=False
-    )
+    request_body = {"text": ["DeepSpeed is a", "DeepSpeed is a machine learning framework"]}
+    response = requests.post(url=url, json=request_body, verify=False)
     print(response.json(), "\n")
 
 
 def query_id(url: str) -> None:
     url = url + "/query_id/"
 
-    response = requests.get(
-        url=url,
-        verify=False
-    )
+    response = requests.get(url=url, verify=False)
     print(response.json(), "\n")
 
 
@@ -69,5 +53,5 @@ def main():
     query_id(url)
 
 
-if (__name__ == "__main__"):
+if __name__ == "__main__":
     main()

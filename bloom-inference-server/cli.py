@@ -4,18 +4,16 @@ import sys
 
 import utils
 from models import get_model_class
-from utils import CLI
-from utils import get_argument_parser
-from utils import parse_generate_kwargs
-from utils import print_rank_n
+from utils import CLI, get_argument_parser, parse_generate_kwargs, print_rank_n
 
 
 def get_args() -> argparse.Namespace:
     parser = get_argument_parser()
 
     group = parser.add_argument_group(title="launch config")
-    group.add_argument("--shutdown_command", required=False,
-                       type=str, default="__shutdown__", help="This string will exit the script")
+    group.add_argument(
+        "--shutdown_command", required=False, type=str, default="__shutdown__", help="This string will exit the script"
+    )
 
     args = utils.get_args(parser, CLI)
 
@@ -29,18 +27,17 @@ def main() -> None:
 
     generate_kwargs = args.generate_kwargs
 
-    while (True):
+    while True:
         try:
             input_text = input("Input text: ")
 
-            if (input_text == args.shutdown_command):
+            if input_text == args.shutdown_command:
                 model.shutdown()
 
-            if (input("change generate_kwargs? [y/n] ") == "y"):
-                while (True):
+            if input("change generate_kwargs? [y/n] ") == "y":
+                while True:
                     try:
-                        generate_kwargs = json.loads(
-                            input("Generate kwargs: "))
+                        generate_kwargs = json.loads(input("Generate kwargs: "))
                         break
                     except KeyboardInterrupt:
                         model.shutdown()
@@ -62,5 +59,5 @@ def main() -> None:
             model.shutdown()
 
 
-if (__name__ == "__main__"):
+if __name__ == "__main__":
     main()

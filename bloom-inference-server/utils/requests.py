@@ -1,5 +1,4 @@
-from typing import Any
-from typing import List
+from typing import Any, List
 
 from pydantic import BaseModel
 
@@ -40,7 +39,7 @@ class GenerateRequest(BaseModel):
 
     def preprocess(self) -> None:
         # temperature = 0 means greedy decoding
-        if (self.temperature == 0):
+        if self.temperature == 0:
             self.do_sample = False
 
 
@@ -63,22 +62,19 @@ class TokenizeResponse(BaseResponse):
 
 
 def parse_bool(value: str) -> bool:
-    if (value.lower() == "true"):
+    if value.lower() == "true":
         return True
-    elif (value.lower() == "false"):
+    elif value.lower() == "false":
         return False
     else:
         raise ValueError("{} is not a valid boolean value".format(value))
 
 
-def parse_field(kwargs: dict,
-                field: str,
-                dtype: int,
-                default_value: Any = None) -> Any:
-    if (field in kwargs):
-        if (type(kwargs[field]) == dtype):
+def parse_field(kwargs: dict, field: str, dtype: int, default_value: Any = None) -> Any:
+    if field in kwargs:
+        if type(kwargs[field]) == dtype:
             return kwargs[field]
-        elif (dtype == bool):
+        elif dtype == bool:
             return parse_bool(kwargs[field])
         else:
             return dtype(kwargs[field])
@@ -104,21 +100,17 @@ def parse_generate_kwargs(text: List[str], kwargs: dict) -> GenerateRequest:
         eos_token_id=parse_field(kwargs, "eos_token_id", int),
         length_penalty=parse_field(kwargs, "length_penalty", float),
         no_repeat_ngram_size=parse_field(kwargs, "no_repeat_ngram_size", int),
-        encoder_no_repeat_ngram_size=parse_field(
-            kwargs, "encoder_no_repeat_ngram_size", int),
+        encoder_no_repeat_ngram_size=parse_field(kwargs, "encoder_no_repeat_ngram_size", int),
         num_return_sequences=parse_field(kwargs, "num_return_sequences", int),
         max_time=parse_field(kwargs, "max_time", float),
         max_new_tokens=parse_field(kwargs, "max_new_tokens", int),
-        decoder_start_token_id=parse_field(
-            kwargs, "decoder_start_token_id", int),
+        decoder_start_token_id=parse_field(kwargs, "decoder_start_token_id", int),
         num_beam_group=parse_field(kwargs, "num_beam_group", int),
         diversity_penalty=parse_field(kwargs, "diversity_penalty", float),
         forced_bos_token_id=parse_field(kwargs, "forced_bos_token_id", int),
         forced_eos_token_id=parse_field(kwargs, "forced_eos_token_id", int),
-        exponential_decay_length_penalty=parse_field(
-            kwargs, "exponential_decay_length_penalty", float),
-        remove_input_from_output=parse_field(
-            kwargs, "remove_input_from_output", bool, False)
+        exponential_decay_length_penalty=parse_field(kwargs, "exponential_decay_length_penalty", float),
+        remove_input_from_output=parse_field(kwargs, "remove_input_from_output", bool, False),
     )
 
 
@@ -126,7 +118,7 @@ def get_filter_dict(d: BaseModel) -> dict:
     d = dict(d)
     q = {}
     for i in d:
-        if (d[i] != None):
+        if d[i] != None:
             q[i] = d[i]
     del q["text"]
     return q

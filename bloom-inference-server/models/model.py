@@ -3,14 +3,10 @@ import os
 from functools import partial
 
 import torch
+
 from huggingface_hub import snapshot_download
 from transformers.utils import is_offline_mode
-from utils import GenerateRequest
-from utils import GenerateResponse
-from utils import TokenizeRequest
-from utils import TokenizeResponse
-from utils import print_rank_n
-from utils import run_rank_n
+from utils import GenerateRequest, GenerateResponse, TokenizeRequest, TokenizeResponse, print_rank_n, run_rank_n
 
 
 class Model:
@@ -22,8 +18,7 @@ class Model:
         raise NotImplementedError("This is a dummy class")
 
     def generate(self, request: GenerateRequest) -> GenerateResponse:
-        input_tokens = self.tokenizer(
-            request.text, return_tensors="pt", padding=True)
+        input_tokens = self.tokenizer(request.text, return_tensors="pt", padding=True)
 
         for t in input_tokens:
             if torch.is_tensor(input_tokens[t]):
@@ -56,39 +51,27 @@ class Model:
                 forced_bos_token_id=request.forced_bos_token_id,
                 forced_eos_token_id=request.forced_eos_token_id,
                 exponential_decay_length_penalty=request.exponential_decay_length_penalty,
-                return_dict_in_generate=True
+                return_dict_in_generate=True,
             )
 
         output_tokens = output.sequences
 
         input_token_lengths = [x.shape[0] for x in input_tokens.input_ids]
         output_token_lengths = [x.shape[0] for x in output_tokens]
-        generated_tokens = [
-            o - i for i, o in zip(input_token_lengths, output_token_lengths)]
+        generated_tokens = [o - i for i, o in zip(input_token_lengths, output_token_lengths)]
 
-        if (request.remove_input_from_output):
+        if request.remove_input_from_output:
             # the generate method's output includes input too. Remove input if
             # that is requested by the user
-            output_tokens = [x[-i:]
-                             for x, i in zip(output_tokens, generated_tokens)]
+            output_tokens = [x[-i:] for x, i in zip(output_tokens, generated_tokens)]
 
-        output_text = self.tokenizer.batch_decode(
-            output_tokens, skip_special_tokens=True)
+        output_text = self.tokenizer.batch_decode(output_tokens, skip_special_tokens=True)
 
-        return GenerateResponse(
-            text=output_text,
-            num_generated_tokens=generated_tokens
-        )
+        return GenerateResponse(text=output_text, num_generated_tokens=generated_tokens)
 
     def tokenize(self, request: TokenizeRequest) -> TokenizeResponse:
-        output = self.tokenizer(
-            request.text,
-            padding=request.padding
-        )
-        return TokenizeResponse(
-            token_ids=output.input_ids,
-            attention_mask=output.attention_mask
-        )
+        output = self.tokenizer(request.text, padding=request.padding)
+        return TokenizeResponse(token_ids=output.input_ids, attention_mask=output.attention_mask)
 
     def shutdown(self) -> None:
         print_rank_n("shutting down")
@@ -101,7 +84,7 @@ def get_downloaded_model_path(model_name: str):
         repo_id=model_name,
         allow_patterns=["*"],
         local_files_only=is_offline_mode(),
-        cache_dir=os.getenv("TRANSFORMERS_CACHE", None)
+        cache_dir=os.getenv("TRANSFORMERS_CACHE", None),
     )
     # download only on 1 process
     run_rank_n(f, barrier=True)

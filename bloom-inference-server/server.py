@@ -1,22 +1,23 @@
 import os
 from functools import partial
 
-from flask import Flask
-from flask import request
+from flask import Flask, request
 from flask_api import status
 from models import get_model_class
 from pydantic import BaseModel
-from utils import HF_ACCELERATE
-from utils import SERVER
-from utils import GenerateRequest
-from utils import TokenizeRequest
-from utils import get_exception_response
-from utils import get_num_tokens_to_generate
-from utils import get_str_dtype
-from utils import get_torch_dtype
-from utils import parse_bool
-from utils import run_and_log_time
-from utils import validate_script_framework_model_dtype_allowed
+from utils import (
+    HF_ACCELERATE,
+    SERVER,
+    GenerateRequest,
+    TokenizeRequest,
+    get_exception_response,
+    get_num_tokens_to_generate,
+    get_str_dtype,
+    get_torch_dtype,
+    parse_bool,
+    run_and_log_time,
+    validate_script_framework_model_dtype_allowed,
+)
 
 
 class QueryID(BaseModel):
@@ -28,19 +29,14 @@ class QueryID(BaseModel):
 # python script via ArgumentParser
 class Args:
     def __init__(self) -> None:
-        self.deployment_framework = os.getenv(
-            "DEPLOYMENT_FRAMEWORK", HF_ACCELERATE)
+        self.deployment_framework = os.getenv("DEPLOYMENT_FRAMEWORK", HF_ACCELERATE)
         self.model_name = os.getenv("MODEL_NAME")
         self.dtype = get_torch_dtype(os.getenv("DTYPE"))
-        self.allowed_max_new_tokens = int(
-            os.getenv("ALLOWED_MAX_NEW_TOKENS", 100))
+        self.allowed_max_new_tokens = int(os.getenv("ALLOWED_MAX_NEW_TOKENS", 100))
         self.debug = parse_bool(os.getenv("DEBUG", "false"))
 
         validate_script_framework_model_dtype_allowed(
-            SERVER,
-            self.deployment_framework,
-            self.model_name,
-            get_str_dtype(self.dtype)
+            SERVER, self.deployment_framework, self.model_name, get_str_dtype(self.dtype)
         )
 
 
@@ -63,19 +59,15 @@ def tokenize():
         x = request.get_json()
         x = TokenizeRequest(**x)
 
-        response, total_time_taken = run_and_log_time(
-            partial(model.tokenize, request=x)
-        )
+        response, total_time_taken = run_and_log_time(partial(model.tokenize, request=x))
 
         response.query_id = query_ids.tokenize_query_id
         query_ids.tokenize_query_id += 1
-        response.total_time_taken = "{:.2f} msecs".format(
-            total_time_taken * 1000)
+        response.total_time_taken = "{:.2f} msecs".format(total_time_taken * 1000)
 
         return response.dict(), status.HTTP_200_OK
     except Exception:
-        response = get_exception_response(
-            query_ids.tokenize_query_id, x.method)
+        response = get_exception_response(query_ids.tokenize_query_id, x.method)
         query_ids.tokenize_query_id += 1
         return response, status.HTTP_500_INTERNAL_SERVER_ERROR
 
@@ -87,12 +79,9 @@ def generate():
         x = GenerateRequest(**x)
         x.preprocess()
 
-        x.max_new_tokens = get_num_tokens_to_generate(
-            x.max_new_tokens, args.allowed_max_new_tokens)
+        x.max_new_tokens = get_num_tokens_to_generate(x.max_new_tokens, args.allowed_max_new_tokens)
 
-        response, total_time_taken = run_and_log_time(
-            partial(model.generate, request=x)
-        )
+        response, total_time_taken = run_and_log_time(partial(model.generate, request=x))
 
         response.query_id = query_ids.generate_query_id
         query_ids.generate_query_id += 1
@@ -100,7 +89,6 @@ def generate():
 
         return response.dict(), status.HTTP_200_OK
     except Exception:
-        response = get_exception_response(
-            query_ids.generate_query_id, x.method)
+        response = get_exception_response(query_ids.generate_query_id, x.method)
         query_ids.generate_query_id += 1
         return response, status.HTTP_500_INTERNAL_SERVER_ERROR
