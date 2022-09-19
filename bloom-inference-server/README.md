@@ -78,7 +78,7 @@ deepspeed --num_gpus 8 benchmark.py --model_name bigscience/bloom --dtype bf16 -
 If you run into things not working or have other questions please open an Issue in the corresponding backend:
 
 - [Accelerate](https://github.com/huggingface/accelerate/issues)
-- [Deepspeed-Inference](./https://github.com/microsoft/DeepSpeed/issues)
-- [Deepspeed-ZeRO](./https://github.com/microsoft/DeepSpeed/issues)
+- [Deepspeed-Inference](https://github.com/microsoft/DeepSpeed/issues)
+- [Deepspeed-ZeRO](https://github.com/microsoft/DeepSpeed/issues)
 
 If there a specific issue with one of the scripts and not the backend only then please open an Issue here and tag [@mayank31398](https://github.com/mayank31398).
