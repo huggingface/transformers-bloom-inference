@@ -33,6 +33,7 @@ class Args:
         self.model_name = os.getenv("MODEL_NAME")
         self.dtype = get_torch_dtype(os.getenv("DTYPE"))
         self.allowed_max_new_tokens = int(os.getenv("ALLOWED_MAX_NEW_TOKENS", 100))
+        self.max_input_length = int(os.getenv("MAX_INPUT_LENGTH", 512))
         self.debug = parse_bool(os.getenv("DEBUG", "false"))
 
         validate_script_framework_model_dtype_allowed(
@@ -80,6 +81,7 @@ def generate():
         x.preprocess()
 
         x.max_new_tokens = get_num_tokens_to_generate(x.max_new_tokens, args.allowed_max_new_tokens)
+        x.max_input_length = args.max_input_length
 
         response, total_time_taken = run_and_log_time(partial(model.generate, request=x))
 
