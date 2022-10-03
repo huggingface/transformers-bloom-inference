@@ -118,9 +118,9 @@ class StopSequenceCriteria(StoppingCriteria):
         if input_ids.shape[0] != 1:
             raise NotImplementedError("stop_sequences only support batch_size = 1")
 
-        input_ids = input_ids[0, -len(s) :].tolist()
+        input_ids = input_ids[0].tolist()
         for s in self.stop_sequences:
-            if input_ids == s:
+            if input_ids[-len(s) :] == s:
                 return True
         return False
 
