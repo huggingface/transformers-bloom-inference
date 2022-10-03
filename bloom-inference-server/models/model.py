@@ -115,8 +115,12 @@ class StopSequenceCriteria(StoppingCriteria):
         self.stop_sequences = stop_sequences
 
     def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs) -> bool:
+        if input_ids.shape[0] != 1:
+            raise NotImplementedError("stop_sequences only support batch_size = 1")
+
+        input_ids = input_ids[0, -len(s) :].tolist()
         for s in self.stop_sequences:
-            if input_ids[:, -len(s) :].tolist() == s:
+            if input_ids == s:
                 return True
         return False
 

@@ -44,6 +44,14 @@ class GenerateRequest(BaseModel):
         if self.temperature == 0:
             self.do_sample = False
 
+        if self.stop_sequences:
+            stop_sequences = []
+            for stopper in stop_sequences:
+                stopper = stopper.strip()
+                stop_sequences.append(stopper)
+                stop_sequences.append(" " + stopper)
+            self.stop_sequences = stop_sequences
+
 
 class GenerateResponse(BaseResponse):
     text: List[str] = None
