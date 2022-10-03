@@ -46,7 +46,7 @@ class GenerateRequest(BaseModel):
 
         if self.stop_sequences:
             stop_sequences = []
-            for stopper in stop_sequences:
+            for stopper in self.stop_sequences:
                 stopper = stopper.strip()
                 stop_sequences.append(stopper)
                 stop_sequences.append(" " + stopper)
