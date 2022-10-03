@@ -28,6 +28,7 @@ class GenerateRequest(BaseModel):
     num_return_sequences: int = None
     max_time: float = None
     max_new_tokens: int = None
+    max_input_length: int = None
     decoder_start_token_id: int = None
     num_beam_groups: int = None
     diversity_penalty: float = None

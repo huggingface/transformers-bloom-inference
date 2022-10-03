@@ -119,6 +119,11 @@ class DSInferenceGRPCServer(Model):
         output_tokens = self.tokenizer(output_text).input_ids
 
         input_token_lengths = [len(x) for x in input_tokens]
+        if request.max_input_length is not None:
+            for i in input_token_lengths:
+                if i > request.max_input_length:
+                    raise Exception(f"max supported input length = {request.max_input_length} for now")
+
         output_token_lengths = [len(x) for x in output_tokens]
         num_generated_tokens = [o - i for i, o in zip(input_token_lengths, output_token_lengths)]
 
