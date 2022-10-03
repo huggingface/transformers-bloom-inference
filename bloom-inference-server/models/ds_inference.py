@@ -14,7 +14,7 @@ import mii
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
 from utils import GenerateRequest, GenerateResponse, get_filter_dict, get_str_dtype, print_rank_n, run_rank_n
 
-from .model import Model, get_downloaded_model_path
+from .model import Model, check_max_input_length, get_downloaded_model_path
 
 
 # basic DeepSpeed inference model class for benchmarking
@@ -119,10 +119,8 @@ class DSInferenceGRPCServer(Model):
         output_tokens = self.tokenizer(output_text).input_ids
 
         input_token_lengths = [len(x) for x in input_tokens]
-        if request.max_input_length is not None:
-            for i in input_token_lengths:
-                if i > request.max_input_length:
-                    raise Exception(f"max supported input length = {request.max_input_length} for now")
+
+        check_max_input_length(input_token_lengths, request.max_input_length)
 
         output_token_lengths = [len(x) for x in output_tokens]
         num_generated_tokens = [o - i for i, o in zip(input_token_lengths, output_token_lengths)]

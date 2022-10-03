@@ -1,6 +1,7 @@
 import argparse
 import os
 from functools import partial
+from typing import List
 
 import torch
 
@@ -57,10 +58,8 @@ class Model:
         output_tokens = output.sequences
 
         input_token_lengths = [x.shape[0] for x in input_tokens.input_ids]
-        if request.max_input_length is not None:
-            for i in input_token_lengths:
-                if i > request.max_input_length:
-                    raise Exception(f"max supported input length = {request.max_input_length} for now")
+
+        check_max_input_length(input_token_lengths, request.max_input_length)
 
         output_token_lengths = [x.shape[0] for x in output_tokens]
         generated_tokens = [o - i for i, o in zip(input_token_lengths, output_token_lengths)]
@@ -95,3 +94,12 @@ def get_downloaded_model_path(model_name: str):
     run_rank_n(f, barrier=True)
     # now since the snapshot is downloaded, pass the model_path to all processes
     return f()
+
+
+def check_max_input_length(input_token_lengths: List[int], max_input_length: int) -> None:
+    if max_input_length is None:
+        return
+
+    for i in input_token_lengths:
+        if i > max_input_length:
+            raise Exception(f"max supported input length = {max_input_length} for now")
