@@ -14,7 +14,7 @@ import mii
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
 from utils import GenerateRequest, GenerateResponse, get_filter_dict, get_str_dtype, print_rank_n, run_rank_n
 
-from .model import Model, check_max_input_length, get_downloaded_model_path
+from .model import Model, check_max_input_length, get_downloaded_model_path, get_stopping_criteria
 
 
 # basic DeepSpeed inference model class for benchmarking
@@ -110,17 +110,19 @@ class DSInferenceGRPCServer(Model):
         self.model = mii.mii_query_handle(self.deployment_name)
 
     def generate(self, request: GenerateRequest) -> GenerateResponse:
-        output_text = self.model.query({"query": request.text}, **get_filter_dict(request)).response
-
-        output_text = [_ for _ in output_text]
-
-        # Remove input from output
         input_tokens = self.tokenizer(request.text).input_ids
-        output_tokens = self.tokenizer(output_text).input_ids
-
         input_token_lengths = [len(x) for x in input_tokens]
 
         check_max_input_length(input_token_lengths, request.max_input_length)
+
+        stopping_criteria = get_stopping_criteria(request.stop_sequences, self.tokenizer)
+
+        output_text = self.model.query(
+            {"query": request.text}, stopping_criteria=stopping_criteria, **get_filter_dict(request)
+        ).response
+
+        output_text = [_ for _ in output_text]
+        output_tokens = self.tokenizer(output_text).input_ids
 
         output_token_lengths = [len(x) for x in output_tokens]
         num_generated_tokens = [o - i for i, o in zip(input_token_lengths, output_token_lengths)]

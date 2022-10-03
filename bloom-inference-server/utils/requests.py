@@ -34,6 +34,7 @@ class GenerateRequest(BaseModel):
     diversity_penalty: float = None
     forced_bos_token_id: int = None
     forced_eos_token_id: int = None
+    stop_sequences: List[str] = None
     exponential_decay_length_penalty: float = None
     remove_input_from_output: bool = False
     method: str = "generate"
