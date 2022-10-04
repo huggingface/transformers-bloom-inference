@@ -34,6 +34,7 @@ class GenerateRequest(BaseModel):
     diversity_penalty: float = None
     forced_bos_token_id: int = None
     forced_eos_token_id: int = None
+    stop_sequences: List[str] = None
     exponential_decay_length_penalty: float = None
     remove_input_from_output: bool = False
     method: str = "generate"
@@ -42,6 +43,14 @@ class GenerateRequest(BaseModel):
         # temperature = 0 means greedy decoding
         if self.temperature == 0:
             self.do_sample = False
+
+        if self.stop_sequences:
+            stop_sequences = []
+            for stopper in self.stop_sequences:
+                stopper = stopper.strip()
+                stop_sequences.append(stopper)
+                stop_sequences.append(" " + stopper)
+            self.stop_sequences = stop_sequences
 
 
 class GenerateResponse(BaseResponse):

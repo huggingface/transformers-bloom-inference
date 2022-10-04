@@ -3,7 +3,7 @@ from utils import DS_INFERENCE, DS_ZERO, HF_ACCELERATE
 from .ds_inference import DSInferenceGRPCServer, DSInferenceModel
 from .ds_zero import DSZeROModel
 from .hf_accelerate import HFAccelerateModel
-from .model import Model
+from .model import Model, get_stopping_criteria
 
 
 def get_model_class(deployment_framework: str, basic: bool = False):

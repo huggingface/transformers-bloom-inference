@@ -6,6 +6,8 @@ from typing import List
 import torch
 
 from huggingface_hub import snapshot_download
+from transformers import AutoTokenizer
+from transformers.generation_stopping_criteria import StoppingCriteria, StoppingCriteriaList
 from transformers.utils import is_offline_mode
 from utils import GenerateRequest, GenerateResponse, TokenizeRequest, TokenizeResponse, print_rank_n, run_rank_n
 
@@ -24,6 +26,8 @@ class Model:
         for t in input_tokens:
             if torch.is_tensor(input_tokens[t]):
                 input_tokens[t] = input_tokens[t].to(self.input_device)
+
+        stopping_criteria = get_stopping_criteria(request.stop_sequences, self.tokenizer)
 
         with torch.no_grad():
             output = self.model.generate(
@@ -52,6 +56,7 @@ class Model:
                 forced_bos_token_id=request.forced_bos_token_id,
                 forced_eos_token_id=request.forced_eos_token_id,
                 exponential_decay_length_penalty=request.exponential_decay_length_penalty,
+                stopping_criteria=stopping_criteria,
                 return_dict_in_generate=True,
             )
 
@@ -103,3 +108,26 @@ def check_max_input_length(input_token_lengths: List[int], max_input_length: int
     for i in input_token_lengths:
         if i > max_input_length:
             raise Exception(f"max supported input length = {max_input_length} for now")
+
+
+class StopSequenceCriteria(StoppingCriteria):
+    def __init__(self, stop_sequences: List[List[int]]):
+        self.stop_sequences = stop_sequences
+
+    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs) -> bool:
+        if input_ids.shape[0] != 1:
+            raise NotImplementedError("stop_sequences only support batch_size = 1")
+
+        input_ids = input_ids[0].tolist()
+        for s in self.stop_sequences:
+            if input_ids[-len(s) :] == s:
+                return True
+        return False
+
+
+def get_stopping_criteria(stop_sequences: List[str], tokenizer: AutoTokenizer) -> StoppingCriteriaList:
+    stopping_criteria = StoppingCriteriaList()
+    if stop_sequences is not None:
+        stopping_criteria.append(StopSequenceCriteria(tokenizer(stop_sequences).input_ids))
+
+    return stopping_criteria
