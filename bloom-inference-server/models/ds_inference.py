@@ -116,7 +116,7 @@ class DSInferenceGRPCServer(Model):
         check_max_input_length(input_token_lengths, request.max_input_length)
 
         if request.stop_sequences is not None:
-            raise NotImplementedError("DS-inference doesn't support stop sequences")
+            raise NotImplementedError("DS-inference doesn't support stop_sequences")
 
         output_text = self.model.query({"query": request.text}, **get_filter_dict(request)).response
 
