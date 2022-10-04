@@ -115,12 +115,7 @@ class DSInferenceGRPCServer(Model):
 
         check_max_input_length(input_token_lengths, request.max_input_length)
 
-        stopping_criteria = get_stopping_criteria(request.stop_sequences, self.tokenizer)
-
-        generate_kwargs = get_filter_dict(request)
-        generate_kwargs["stopping_criteria"] = stopping_criteria
-
-        output_text = self.model.query({"query": request.text}, **generate_kwargs).response
+        output_text = self.model.query({"query": request.text}, **get_filter_dict(request)).response
 
         output_text = [_ for _ in output_text]
         output_tokens = self.tokenizer(output_text).input_ids
