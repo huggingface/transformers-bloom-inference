@@ -11,7 +11,6 @@ import torch.distributed as dist
 
 import deepspeed
 import mii
-from responses import stop
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
 from utils import GenerateRequest, GenerateResponse, get_filter_dict, get_str_dtype, print_rank_n, run_rank_n
 
