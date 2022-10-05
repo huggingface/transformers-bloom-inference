@@ -110,7 +110,7 @@ tp_presharded_mode = True if model_name in tp_presharded_models else False
 
 # print(get_checkpoint_files(model_name))
 
-print_rank0("*** Loading the model {model_name}")
+print_rank0(f"*** Loading the model {model_name}")
 
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 config = AutoConfig.from_pretrained(model_name)
