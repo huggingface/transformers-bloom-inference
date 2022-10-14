@@ -12,7 +12,7 @@ Pytorch:
 
 * [Accelerate, DeepSpeed-Inference and DeepSpeed-ZeRO](./bloom-inference-scripts)
 
-* Thomas Wang is working on a Custom Fused Kernel solution - will link once it's ready for a general use.
+* [Custom HF Code](https://github.com/huggingface/transformers_bloom_parallel/).
 
 JAX:
 
