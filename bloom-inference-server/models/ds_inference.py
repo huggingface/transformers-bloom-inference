@@ -91,9 +91,7 @@ class DSInferenceGRPCServer(Model):
 
             mii.deploy(
                 task="text-generation",
-                # should pass args.model_name but can't since the new
-                # weights are not supported yet. So, this is a hack
-                model="bigscience/bloom",
+                model=args.model_name,
                 deployment_name=self.deployment_name,
                 model_path=downloaded_model_path,
                 mii_config={
