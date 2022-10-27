@@ -16,7 +16,6 @@
 
 
 import gc
-import glob
 import io
 import json
 import math
@@ -67,35 +66,32 @@ def print_rank0(*msg):
 ### Model loading and instantiating on GPUs
 
 
-def get_repo_root(model_name_or_path, revision=None):
-    # checks if online or not
-    if is_offline_mode():
-
-        print_rank0("Offline mode: forcing local_files_only=True")
-        local_files_only = True
-    else:
-        local_files_only = False
-
-    # loads files from hub
-    cached_repo_dir = snapshot_download(
-        model_name_or_path, allow_patterns=["*"], local_files_only=local_files_only, revision=revision
-    )
-
-    return cached_repo_dir
-
-
-def get_checkpoint_files(model_name_or_path, revision=None):
+def get_repo_root(model_name_or_path):
     # checks if online or not
     if is_offline_mode():
         print_rank0("Offline mode: forcing local_files_only=True")
-        local_files_only = True
-    else:
-        local_files_only = False
 
-    # loads files from hub
-    cached_repo_dir = snapshot_download(
-        model_name_or_path, allow_patterns=["*"], local_files_only=local_files_only, revision=revision
+    # download only on first process
+    if rank == 0:
+        snapshot_download(
+            model_name_or_path,
+            local_files_only=is_offline_mode(),
+            cache_dir=os.getenv("TRANSFORMERS_CACHE", None),
+            ignore_patterns=["*.safetensors"],
+        )
+
+    dist.barrier()
+
+    return snapshot_download(
+        model_name_or_path,
+        local_files_only=is_offline_mode(),
+        cache_dir=os.getenv("TRANSFORMERS_CACHE", None),
+        ignore_patterns=["*.safetensors"],
     )
+
+
+def get_checkpoint_files(model_name_or_path):
+    cached_repo_dir = get_repo_root(model_name_or_path)
 
     # extensions: .bin | .pt
     # creates a list of paths from all downloaded files in cache dir
