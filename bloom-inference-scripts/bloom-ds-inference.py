@@ -71,15 +71,23 @@ def get_repo_root(model_name_or_path):
     if is_offline_mode():
         print_rank0("Offline mode: forcing local_files_only=True")
 
-    # loads files from hub
-    cached_repo_dir = snapshot_download(
+    # download only on first process
+    if rank == 0:
+        snapshot_download(
+            model_name_or_path,
+            local_files_only=is_offline_mode(),
+            cache_dir=os.getenv("TRANSFORMERS_CACHE", None),
+            ignore_patterns=["*.safetensors"],
+        )
+
+    dist.barrier()
+
+    return snapshot_download(
         model_name_or_path,
         local_files_only=is_offline_mode(),
         cache_dir=os.getenv("TRANSFORMERS_CACHE", None),
         ignore_patterns=["*.safetensors"],
     )
-
-    return cached_repo_dir
 
 
 def get_checkpoint_files(model_name_or_path):
