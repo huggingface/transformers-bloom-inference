@@ -68,7 +68,7 @@ class Model:
         if request.remove_input_from_output:
             # the generate method's output includes input too. Remove input if
             # that is requested by the user
-            output_tokens = [x[-i:] for x, i in zip(output_tokens, generated_tokens)]
+            output_tokens = [x[-i:] if i != 0 else [] for x, i in zip(output_tokens, generated_tokens)]
 
         output_text = self.tokenizer.batch_decode(output_tokens, skip_special_tokens=True)
 
