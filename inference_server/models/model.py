@@ -85,7 +85,6 @@ def get_downloaded_model_path(model_name: str):
         repo_id=model_name,
         local_files_only=is_offline_mode(),
         cache_dir=os.getenv("TRANSFORMERS_CACHE", None),
-        allow_patterns=["*.pt", "*.bin"],
         # maybe move to safetensors in the future
         ignore_patterns=["*.safetensors", "*log*", "*evaluation*", "tensorboard"],
     )
