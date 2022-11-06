@@ -1,0 +1,25 @@
+syntax = "proto3";
+package generation;
+
+service GenerationService {
+    rpc Generate (GenerationRequest) returns (GenerationResponse) {}
+}
+
+message Value {
+    oneof oneof_values {
+        string svalue = 1;
+        int64 ivalue = 2;
+        float fvalue = 3;
+        bool bvalue = 4;
+    }
+}
+
+message GenerationRequest {
+    repeated string texts = 1;
+    map<string,Value> generate_kwargs = 2;
+}
+
+message GenerationResponse {
+    repeated string texts = 1;
+    repeated int32 num_generated_tokens = 2;
+}
