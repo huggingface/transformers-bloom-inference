@@ -35,12 +35,12 @@ Example: generate_kwargs =
 
 1. using HF accelerate
 ```shell
-python cli.py --model_name bigscience/bloom --dtype bf16 --deployment_framework hf_accelerate --generate_kwargs '{"min_length": 100, "max_new_tokens": 100, "do_sample": false}'
+python -m inference_server.cli --model_name bigscience/bloom --dtype bf16 --deployment_framework hf_accelerate --generate_kwargs '{"min_length": 100, "max_new_tokens": 100, "do_sample": false}' --num_gpus 8
 ```
 
 2. using DS inference
 ```shell
-python cli.py --model_name microsoft/bloom-deepspeed-inference-fp16 --dtype fp16 --deployment_framework ds_inference --generate_kwargs '{"min_length": 100, "max_new_tokens": 100, "do_sample": false}'
+python -m inference_server.cli --model_name microsoft/bloom-deepspeed-inference-fp16 --dtype fp16 --deployment_framework ds_inference --generate_kwargs '{"min_length": 100, "max_new_tokens": 100, "do_sample": false}' --num_gpus 8
 ```
 
 #### BLOOM server deployment
@@ -51,42 +51,21 @@ python cli.py --model_name microsoft/bloom-deepspeed-inference-fp16 --dtype fp16
 
 1. using HF accelerate
 ```shell
-python benchmark.py --model_name bigscience/bloom --dtype bf16 --deployment_framework hf_accelerate --benchmark_cycles 5
+python -m inference_server.benchmark --model_name bigscience/bloom --dtype bf16 --deployment_framework hf_accelerate --benchmark_cycles 5 --num_gpus 8
 ```
 
 2. using DS inference
 ```shell
-deepspeed --num_gpus 8 benchmark.py --model_name bigscience/bloom --dtype fp16 --deployment_framework ds_inference --benchmark_cycles 5
+deepspeed --num_gpus 8 --module inference_server.benchmark --model_name bigscience/bloom --dtype fp16 --deployment_framework ds_inference --benchmark_cycles 5 --num_gpus 8
 ```
 alternatively, to load model faster:
 ```shell
-deepspeed --num_gpus 8 benchmark.py --model_name microsoft/bloom-deepspeed-inference-fp16 --dtype fp16 --deployment_framework ds_inference --benchmark_cycles 5
+deepspeed --num_gpus 8 --module inference_server.benchmark --model_name microsoft/bloom-deepspeed-inference-fp16 --dtype fp16 --deployment_framework ds_inference --benchmark_cycles 5 --num_gpus 8
 ```
 
 3. using DS ZeRO
 ```shell
-deepspeed --num_gpus 8 benchmark.py --model_name bigscience/bloom --dtype bf16 --deployment_framework ds_zero --benchmark_cycles 5
-```
-
-#### Internal benchmarks:
-
-```shell
-for bs in {1,2,4,8,16,32,64,128}
-do
-    python scripts/bloom-inference-server/benchmark.py --model_name bigscience/bloom --dtype bf16 --deployment_framework hf_accelerate --benchmark_cycles 5 --batch_size $bs 2>&1 | tee logs/hf-$bs.log
-
-    deepspeed --num_gpus 8 scripts/bloom-inference-server/benchmark.py --model_name bigscience/bloom --dtype fp16 --deployment_framework ds_inference --save_mp_checkpoint_path <PATH TO DS CACHED MODEL> --benchmark_cycles 5 --batch_size $bs 2>&1 | tee logs/ds-$bs.log
-
-    deepspeed --num_gpus 8 scripts/bloom-inference-server/benchmark.py --model_name bigscience/bloom --dtype bf16 --deployment_framework ds_zero --benchmark_cycles 5 --batch_size $bs 2>&1 | tee logs/ds-zero-$bs.log
-done
-```
-
-The following will benchmark sequence length for batch size = 1 on DS inference.
-```shell
-for sq in {1,10,50,100,200,300,400,500,600,700,800,900,1000,1500,2000,2500,3000,3500,4000,4500,5000}
-do
-    deepspeed --num_gpus 8 scripts/bloom-inference-server/benchmark.py --model_name bigscience/bloom --dtype fp16 --batch_size 1 --benchmark_cycles 5 --deployment_framework ds_inference --generate_kwargs '{"do_sample": false, "min_length": '$sq', "max_new_tokens": '$sq'}' 2>&1 | tee logs/ds_$sq.log
-done
+deepspeed --num_gpus 8 --module inference_server.benchmark --model_name bigscience/bloom --dtype bf16 --deployment_framework ds_zero --benchmark_cycles 5 --num_gpus 8
 ```
 
 ## Support
