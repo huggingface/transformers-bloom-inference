@@ -7,4 +7,4 @@ DS_ZERO = "ds_zero"
 DS_INFERENCE_BLOOM_FP16 = "microsoft/bloom-deepspeed-inference-fp16"
 DS_INFERENCE_BLOOM_INT8 = "microsoft/bloom-deepspeed-inference-int8"
 
-GRPC_MAX_MSG_SIZE = 2**30  # 1GB
+# GRPC_MAX_MSG_SIZE = 2**30  # 1GB

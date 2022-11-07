@@ -96,7 +96,7 @@ def get_torch_dtype(dtype_str: str) -> torch.dtype:
         return torch.int8
 
 
-def get_str_dtype(dtype_str: str) -> torch.dtype:
+def get_str_dtype(dtype_str: torch.dtype) -> str:
     if dtype_str == torch.bfloat16:
         return "bf16"
     elif dtype_str == torch.float16:
