@@ -120,7 +120,7 @@ def generate():
     return zip(inputs, outputs, total_new_tokens)
 
 
-print_rank0(f"*** Running generate")
+print_rank0("*** Running generate")
 t_generate_start = time.time()
 generated = generate()
 t_generate_span = time.time() - t_generate_start
@@ -135,7 +135,7 @@ if args.benchmark:
     torch.cuda.empty_cache()
     gc.collect()
 
-    print_rank0(f"*** Running benchmark")
+    print_rank0("*** Running benchmark")
     # warm up
     for i in range(1):
         _ = generate()

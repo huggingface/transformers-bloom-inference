@@ -62,7 +62,7 @@ def benchmark_end_to_end(args: argparse.Namespace, zero_activated: bool = False)
         print_rank_n(f"{'-' * 60}\nin = {i}\nout = {o}\n")
 
     if args.benchmark_cycles > 0:
-        print_rank_n(f"*** Running benchmark")
+        print_rank_n("*** Running benchmark")
 
         torch.cuda.empty_cache()
         gc.collect()
