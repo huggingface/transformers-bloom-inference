@@ -73,7 +73,7 @@ def parse_bool(value: str) -> bool:
         raise ValueError("{} is not a valid boolean value".format(value))
 
 
-def parse_field(kwargs: dict, field: str, dtype: int, default_value: Any = None) -> Any:
+def parse_field(kwargs: dict, field: str, dtype: type, default_value: Any = None) -> Any:
     if field in kwargs:
         if type(kwargs[field]) == dtype:
             return kwargs[field]

@@ -39,7 +39,7 @@ class GenerationServer(generation_pb2_grpc.GenerationServiceServicer):
 
 def serve(inference_pipeline, port):
     server = grpc.server(
-        futures.ThreadPoolExecutor(max_workers=10),
+        futures.ThreadPoolExecutor(max_workers=1),
         options=[
             ("grpc.max_send_message_length", GRPC_MAX_MSG_SIZE),
             ("grpc.max_receive_message_length", GRPC_MAX_MSG_SIZE),

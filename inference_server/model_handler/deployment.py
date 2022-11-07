@@ -65,12 +65,10 @@ class ModelDeployment(MIIServerClient):
         self.process = subprocess.Popen(cmd)
 
     def _initialize_grpc_client(self):
-        channels = []
         self.stubs = []
         for i in range(self.num_gpus):
             channel = grpc.aio.insecure_channel(f"localhost:{self.port_number + i}")
             stub = generation_pb2_grpc.GenerationServiceStub(channel)
-            channels.append(channel)
             self.stubs.append(stub)
 
     # runs task in parallel and return the result from the first task
