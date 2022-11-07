@@ -1,8 +1,3 @@
-# launch script
-BENCHMARK = "benchmark"
-CLI = "cli"
-SERVER = "server"
-
 # inference method (args.deployment_framework)
 HF_ACCELERATE = "hf_accelerate"
 DS_INFERENCE = "ds_inference"
