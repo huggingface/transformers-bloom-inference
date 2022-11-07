@@ -5,25 +5,21 @@ We support HuggingFace accelerate and DeepSpeed Inference for generation.
 Install required packages:
 
 ```shell
-pip install flask flask_api gunicorn pydantic accelerate huggingface_hub>=0.9.0 deepspeed>=0.7.3
+pip install flask flask_api gunicorn pydantic accelerate huggingface_hub>=0.9.0 deepspeed>=0.7.3 deepspeed-mii==0.0.2
 ```
-To install [DeepSpeed-MII](https://github.com/microsoft/DeepSpeed-MII):
+
+alternatively you can also install deepspeed from source:
 ```shell
-git clone https://github.com/microsoft/DeepSpeed-MII
-cd DeepSpeed-MII
-pip install .
+git clone https://github.com/microsoft/DeepSpeed
+cd DeepSpeed
+CFLAGS="-I$CONDA_PREFIX/include/" LDFLAGS="-L$CONDA_PREFIX/lib/" TORCH_CUDA_ARCH_LIST="7.0" DS_BUILD_CPU_ADAM=1 DS_BUILD_AIO=1 DS_BUILD_UTILS=1 pip install -e . --global-option="build_ext" --global-option="-j8" --no-cache -v --disable-pip-version-check
 ```
 
 All the provided scripts are tested on 8 A100 80GB GPUs for BLOOM 176B (fp16/bf16) and 4 A100 80GB GPUs for BLOOM 176B (int8). These scripts might not work for other models or a different number of GPUs.
 
 DS inference is deployed using the DeepSpeed MII library which requires the resharded checkpoints for 8 x Tensor Parallel.
 
-Note: sometimes GPU memory is not freed when DS inference deployment is shutdown. You can free this memory by running:
-```python
-import mii
-mii.terminate("ds_inference_grpc_server")
-```
-or alternatively, just doing a `killall python` in terminal.
+Note: Sometimes GPU memory is not freed when DS inference deployment crashes. You can free this memory by running `killall python` in terminal.
 
 For using BLOOM quantized, use dtype = int8. Also, change the model_name to microsoft/bloom-deepspeed-inference-int8 for DeepSpeed-Inference. For HF accelerate, no change is needed for model_name.
 
@@ -39,12 +35,12 @@ Example: generate_kwargs =
 
 1. using HF accelerate
 ```shell
-python cli.py --model_name bigscience/bloom --dtype bf16 --deployment_framework hf_accelerate --generate_kwargs '{"min_length": 100, "max_new_tokens": 100, "do_sample": false}'
+python -m inference_server.cli --model_name bigscience/bloom --dtype bf16 --deployment_framework hf_accelerate --generate_kwargs '{"min_length": 100, "max_new_tokens": 100, "do_sample": false}' --num_gpus 8
 ```
 
 2. using DS inference
 ```shell
-python cli.py --model_name microsoft/bloom-deepspeed-inference-fp16 --dtype fp16 --deployment_framework ds_inference --generate_kwargs '{"min_length": 100, "max_new_tokens": 100, "do_sample": false}'
+python -m inference_server.cli --model_name microsoft/bloom-deepspeed-inference-fp16 --dtype fp16 --deployment_framework ds_inference --generate_kwargs '{"min_length": 100, "max_new_tokens": 100, "do_sample": false}' --num_gpus 8
 ```
 
 #### BLOOM server deployment
@@ -55,21 +51,21 @@ python cli.py --model_name microsoft/bloom-deepspeed-inference-fp16 --dtype fp16
 
 1. using HF accelerate
 ```shell
-python benchmark.py --model_name bigscience/bloom --dtype bf16 --deployment_framework hf_accelerate --benchmark_cycles 5
+python -m inference_server.benchmark --model_name bigscience/bloom --dtype bf16 --deployment_framework hf_accelerate --benchmark_cycles 5 --num_gpus 8
 ```
 
 2. using DS inference
 ```shell
-deepspeed --num_gpus 8 benchmark.py --model_name bigscience/bloom --dtype fp16 --deployment_framework ds_inference --benchmark_cycles 5
+deepspeed --num_gpus 8 --module inference_server.benchmark --model_name bigscience/bloom --dtype fp16 --deployment_framework ds_inference --benchmark_cycles 5 --num_gpus 8
 ```
 alternatively, to load model faster:
 ```shell
-deepspeed --num_gpus 8 benchmark.py --model_name microsoft/bloom-deepspeed-inference-fp16 --dtype fp16 --deployment_framework ds_inference --benchmark_cycles 5
+deepspeed --num_gpus 8 --module inference_server.benchmark --model_name microsoft/bloom-deepspeed-inference-fp16 --dtype fp16 --deployment_framework ds_inference --benchmark_cycles 5 --num_gpus 8
 ```
 
 3. using DS ZeRO
 ```shell
-deepspeed --num_gpus 8 benchmark.py --model_name bigscience/bloom --dtype bf16 --deployment_framework ds_zero --benchmark_cycles 5
+deepspeed --num_gpus 8 --module inference_server.benchmark --model_name bigscience/bloom --dtype bf16 --deployment_framework ds_zero --benchmark_cycles 5 --num_gpus 8
 ```
 
 ## Support

@@ -178,7 +178,7 @@ def generate():
 
 # XXX: this is currently doing world_size streams on world_size gpus, so we can feed it different inputs on each! and hence the time can be divided by world_size
 
-print_rank0(f"*** Running generate")
+print_rank0("*** Running generate")
 t_generate_start = time.time()
 pairs = generate()
 t_generate_span = time.time() - t_generate_start
@@ -194,7 +194,7 @@ if args.benchmark:
     gc.collect()
     deepspeed.runtime.utils.see_memory_usage("end-of-generate", force=True)
 
-    print_rank0(f"*** Running benchmark")
+    print_rank0("*** Running benchmark")
 
     # warm up
     for i in range(1):

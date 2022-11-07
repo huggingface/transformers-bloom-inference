@@ -11,15 +11,7 @@ from typing import Any, List, Tuple, Union
 import torch
 import torch.distributed as dist
 
-from .constants import (
-    BIGSCIENCE_BLOOM,
-    DS_INFERENCE,
-    DS_INFERENCE_BLOOM_FP16,
-    DS_INFERENCE_BLOOM_INT8,
-    DS_ZERO,
-    HF_ACCELERATE,
-    SCRIPT_FRAMEWORK_MODEL_DTYPE_ALLOWED,
-)
+from ..constants import DS_INFERENCE, DS_INFERENCE_BLOOM_FP16, DS_INFERENCE_BLOOM_INT8, DS_ZERO, HF_ACCELERATE
 
 
 # used for benchmarks
@@ -46,7 +38,6 @@ def get_argument_parser() -> argparse.ArgumentParser:
         "--model_name",
         type=str,
         required=True,
-        choices=[BIGSCIENCE_BLOOM, DS_INFERENCE_BLOOM_FP16, DS_INFERENCE_BLOOM_INT8],
         help="model to use",
     )
     group.add_argument("--dtype", type=str, required=True, choices=["bf16", "fp16", "int8"], help="dtype for model")
@@ -56,18 +47,18 @@ def get_argument_parser() -> argparse.ArgumentParser:
         default='{"min_length": 100, "max_new_tokens": 100, "do_sample": false}',
         help="generate parameters. look at https://huggingface.co/docs/transformers/v4.21.1/en/main_classes/text_generation#transformers.generation_utils.GenerationMixin.generate to see the supported parameters",
     )
+    group.add_argument("--num_gpus", type=int, default=1, help="number of GPUs to use")
 
     return parser
 
 
-def get_args(parser: argparse.ArgumentParser, script: str) -> argparse.Namespace:
+def parse_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
     args = parser.parse_args()
-
-    validate_script_framework_model_dtype_allowed(script, args.deployment_framework, args.model_name, args.dtype)
 
     args.dtype = get_torch_dtype(args.dtype)
     args.generate_kwargs = json.loads(args.generate_kwargs)
     args.use_pre_sharded_checkpoints = args.model_name in [DS_INFERENCE_BLOOM_FP16, DS_INFERENCE_BLOOM_INT8]
+
     return args
 
 
@@ -96,15 +87,6 @@ def print_rank_n(*values, rank: int = 0) -> None:
         print(*values)
 
 
-def get_dtype_from_model_name(model_name: str) -> str:
-    if model_name == BIGSCIENCE_BLOOM:
-        return "bf16"
-    elif model_name == DS_INFERENCE_BLOOM_FP16:
-        return "fp16"
-    elif model_name == DS_INFERENCE_BLOOM_INT8:
-        return "int8"
-
-
 def get_torch_dtype(dtype_str: str) -> torch.dtype:
     if dtype_str == "bf16":
         return torch.bfloat16
@@ -114,7 +96,7 @@ def get_torch_dtype(dtype_str: str) -> torch.dtype:
         return torch.int8
 
 
-def get_str_dtype(dtype_str: str) -> torch.dtype:
+def get_str_dtype(dtype_str: torch.dtype) -> str:
     if dtype_str == torch.bfloat16:
         return "bf16"
     elif dtype_str == torch.float16:
@@ -164,17 +146,6 @@ def pad_ids(arrays, padding, max_length=-1):
     arrays = [[padding] * (max_length - len(array)) + array for array in arrays]
 
     return arrays
-
-
-def validate_script_framework_model_dtype_allowed(
-    script: str, deployment_framework: str, model_name: str, dtype: str
-) -> bool:
-    if script in SCRIPT_FRAMEWORK_MODEL_DTYPE_ALLOWED:
-        if deployment_framework in SCRIPT_FRAMEWORK_MODEL_DTYPE_ALLOWED[script]:
-            if model_name in SCRIPT_FRAMEWORK_MODEL_DTYPE_ALLOWED[script][deployment_framework]:
-                if dtype in SCRIPT_FRAMEWORK_MODEL_DTYPE_ALLOWED[script][deployment_framework][model_name]:
-                    return
-    raise NotImplementedError(f"{script} is not supported with {deployment_framework}, {model_name} and {dtype} dtype")
 
 
 def get_exception_response(query_id: int, method: str, debug: bool = False):

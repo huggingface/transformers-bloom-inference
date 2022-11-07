@@ -5,27 +5,25 @@ from functools import partial
 
 import torch
 
-import deepspeed
-import utils
-from models import Model, get_model_class
-from utils import (
-    BENCHMARK,
-    DS_INFERENCE,
-    DS_ZERO,
+from .constants import DS_INFERENCE, DS_ZERO
+from .model_handler.deployment import ModelDeployment
+from .models import start_inference_engine
+from .utils import (
     GenerateRequest,
+    create_generate_request,
     get_argument_parser,
     get_dummy_batch,
-    parse_generate_kwargs,
+    parse_args,
     print_rank_n,
     run_and_log_time,
 )
 
 
-def benchmark_generation(model: Model, request: GenerateRequest, cycles: int = 5):
+def benchmark_generation(model: ModelDeployment, request: GenerateRequest, cycles: int = 5):
     # run benchmarks for number of cycles
     total_new_tokens_generated = 0
     for _ in range(cycles):
-        response = model.generate(request)
+        response = model.generate(request=request)
         total_new_tokens_generated += sum(new_tokens for new_tokens in response.num_generated_tokens)
     return total_new_tokens_generated
 
@@ -46,31 +44,31 @@ Model loading time + generation time per batch = {initialization_time + latency:
 """
 
 
-def benchmark_end_to_end(args: argparse.Namespace, model_class: Model, zero_activated: bool = False) -> None:
-    model, initialization_time = run_and_log_time(partial(model_class, args=args))
+def benchmark_end_to_end(args: argparse.Namespace, zero_activated: bool = False) -> None:
+    model, initialization_time = run_and_log_time(
+        partial(ModelDeployment, args=args, use_grpc_server=False, num_gpus=args.num_gpus)
+    )
 
-    request = parse_generate_kwargs(get_dummy_batch(args.batch_size), args.generate_kwargs)
-
-    request.preprocess()
+    request = create_generate_request(get_dummy_batch(args.batch_size), args.generate_kwargs)
 
     print_rank_n(f"generate_kwargs = {args.generate_kwargs}")
     print_rank_n(f"batch_size = {args.batch_size}")
 
     # warmup is a must if measuring speed as it's when all the optimizations are performed
     # e.g. on 8x80 a100 the first pass of 100 tokens takes 23sec, and the next one is 4secs
-    response = model.generate(request)
+    response = model.generate(request=request)
 
     for i, (o, _) in zip(request.text, zip(response.text, response.num_generated_tokens)):
         print_rank_n(f"{'-' * 60}\nin = {i}\nout = {o}\n")
 
     if args.benchmark_cycles > 0:
-        print_rank_n(f"*** Running benchmark")
+        print_rank_n("*** Running benchmark")
 
         torch.cuda.empty_cache()
         gc.collect()
 
         # warm up
-        model.generate(request)
+        model.generate(request=request)
         torch.cuda.synchronize()
 
         # benchmark
@@ -99,7 +97,7 @@ def get_args() -> argparse.Namespace:
     group.add_argument("--batch_size", default=1, type=int, help="batch size")
     group.add_argument("--cpu_offload", action="store_true", help="whether to activate CPU offload for DS ZeRO")
 
-    args = utils.get_args(parser, BENCHMARK)
+    args = parse_args(parser)
 
     launched_with_deepspeed = args.deployment_framework in [DS_INFERENCE, DS_ZERO]
 
@@ -114,13 +112,8 @@ def get_args() -> argparse.Namespace:
 
 def main() -> None:
     args = get_args()
-
-    model_class = get_model_class(args.deployment_framework, True)
-
-    if args.deployment_framework in [DS_INFERENCE, DS_ZERO]:
-        deepspeed.init_distributed("nccl")
-
-    benchmark_end_to_end(args, model_class, args.deployment_framework == DS_ZERO)
+    start_inference_engine(args.deployment_framework)
+    benchmark_end_to_end(args, args.deployment_framework == DS_ZERO)
 
 
 if __name__ == "__main__":

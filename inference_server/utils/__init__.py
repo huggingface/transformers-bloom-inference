@@ -1,15 +1,13 @@
-from .constants import BENCHMARK, CLI, DS_INFERENCE, DS_ZERO, HF_ACCELERATE, SERVER
 from .requests import (
     GenerateRequest,
     GenerateResponse,
     TokenizeRequest,
     TokenizeResponse,
+    create_generate_request,
     get_filter_dict,
     parse_bool,
-    parse_generate_kwargs,
 )
 from .utils import (
-    get_args,
     get_argument_parser,
     get_dummy_batch,
     get_exception_response,
@@ -17,8 +15,8 @@ from .utils import (
     get_str_dtype,
     get_torch_dtype,
     pad_ids,
+    parse_args,
     print_rank_n,
     run_and_log_time,
     run_rank_n,
-    validate_script_framework_model_dtype_allowed,
 )

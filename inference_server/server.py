@@ -3,20 +3,19 @@ from functools import partial
 
 from flask import Flask, request
 from flask_api import status
-from models import get_model_class
 from pydantic import BaseModel
-from utils import (
-    HF_ACCELERATE,
-    SERVER,
+
+from .constants import DS_INFERENCE, DS_ZERO, HF_ACCELERATE
+from .model_handler.deployment import ModelDeployment
+from .models import check_batch_size
+from .utils import (
     GenerateRequest,
     TokenizeRequest,
     get_exception_response,
     get_num_tokens_to_generate,
-    get_str_dtype,
     get_torch_dtype,
     parse_bool,
     run_and_log_time,
-    validate_script_framework_model_dtype_allowed,
 )
 
 
@@ -34,16 +33,16 @@ class Args:
         self.dtype = get_torch_dtype(os.getenv("DTYPE"))
         self.allowed_max_new_tokens = int(os.getenv("ALLOWED_MAX_NEW_TOKENS", 100))
         self.max_input_length = int(os.getenv("MAX_INPUT_LENGTH", 512))
+        self.max_batch_size = int(os.getenv("MAX_BATCH_SIZE", 4))
         self.debug = parse_bool(os.getenv("DEBUG", "false"))
-
-        validate_script_framework_model_dtype_allowed(
-            SERVER, self.deployment_framework, self.model_name, get_str_dtype(self.dtype)
-        )
+        self.always_allowed_ip = os.getenv("ALWAYS_ALLOWED_IP")
+        self.use_grpc_server = self.deployment_framework in [DS_INFERENCE, DS_ZERO]
+        self.num_gpus = int(os.getenv("NUM_GPUS", 1))
 
 
 # ------------------------------------------------------
 args = Args()
-model = get_model_class(args.deployment_framework)(args)
+model = ModelDeployment(args, args.use_grpc_server, num_gpus=args.num_gpus)
 query_ids = QueryID()
 app = Flask(__name__)
 # ------------------------------------------------------
@@ -78,7 +77,7 @@ def generate():
     try:
         x = request.get_json()
         x = GenerateRequest(**x)
-        x.preprocess()
+        check_batch_size(len(x.text), args.max_batch_size)
 
         x.max_new_tokens = get_num_tokens_to_generate(x.max_new_tokens, args.allowed_max_new_tokens)
         x.max_input_length = args.max_input_length

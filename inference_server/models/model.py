@@ -6,10 +6,9 @@ from typing import List
 import torch
 
 from huggingface_hub import snapshot_download
-from transformers import AutoTokenizer
-from transformers.generation_stopping_criteria import StoppingCriteria, StoppingCriteriaList
 from transformers.utils import is_offline_mode
-from utils import GenerateRequest, GenerateResponse, TokenizeRequest, TokenizeResponse, print_rank_n, run_rank_n
+
+from ..utils import GenerateRequest, GenerateResponse, TokenizeRequest, TokenizeResponse, run_rank_n
 
 
 class Model:
@@ -26,8 +25,6 @@ class Model:
         for t in input_tokens:
             if torch.is_tensor(input_tokens[t]):
                 input_tokens[t] = input_tokens[t].to(self.input_device)
-
-        stopping_criteria = get_stopping_criteria(request.stop_sequences, self.tokenizer)
 
         with torch.no_grad():
             output = self.model.generate(
@@ -56,7 +53,6 @@ class Model:
                 forced_bos_token_id=request.forced_bos_token_id,
                 forced_eos_token_id=request.forced_eos_token_id,
                 exponential_decay_length_penalty=request.exponential_decay_length_penalty,
-                stopping_criteria=stopping_criteria,
                 return_dict_in_generate=True,
             )
 
@@ -72,19 +68,15 @@ class Model:
         if request.remove_input_from_output:
             # the generate method's output includes input too. Remove input if
             # that is requested by the user
-            output_tokens = [x[-i:] for x, i in zip(output_tokens, generated_tokens)]
+            output_tokens = [x[-i:] if i != 0 else [] for x, i in zip(output_tokens, generated_tokens)]
 
         output_text = self.tokenizer.batch_decode(output_tokens, skip_special_tokens=True)
 
         return GenerateResponse(text=output_text, num_generated_tokens=generated_tokens)
 
     def tokenize(self, request: TokenizeRequest) -> TokenizeResponse:
-        output = self.tokenizer(request.text, padding=request.padding)
-        return TokenizeResponse(token_ids=output.input_ids, attention_mask=output.attention_mask)
-
-    def shutdown(self) -> None:
-        print_rank_n("shutting down")
-        exit()
+        response = self.tokenizer(request.text, padding=request.padding)
+        return TokenizeResponse(token_ids=response.input_ids, attention_mask=response.attention_mask)
 
 
 def get_downloaded_model_path(model_name: str):
@@ -94,7 +86,7 @@ def get_downloaded_model_path(model_name: str):
         local_files_only=is_offline_mode(),
         cache_dir=os.getenv("TRANSFORMERS_CACHE", None),
         # maybe move to safetensors in the future
-        ignore_patterns=["*.safetensors"],
+        ignore_patterns=["*.safetensors", "*log*", "*evaluation*", "tensorboard"],
     )
     # download only on 1 process
     run_rank_n(f, barrier=True)
@@ -111,24 +103,9 @@ def check_max_input_length(input_token_lengths: List[int], max_input_length: int
             raise Exception(f"max supported input length = {max_input_length} for now")
 
 
-class StopSequenceCriteria(StoppingCriteria):
-    def __init__(self, stop_sequences: List[List[int]]):
-        self.stop_sequences = stop_sequences
+def check_batch_size(batch_size: int, max_batch_size: int) -> None:
+    if max_batch_size is None:
+        return
 
-    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs) -> bool:
-        if input_ids.shape[0] != 1:
-            raise NotImplementedError("stop_sequences only support batch_size = 1")
-
-        input_ids = input_ids[0].tolist()
-        for s in self.stop_sequences:
-            if input_ids[-len(s) :] == s:
-                return True
-        return False
-
-
-def get_stopping_criteria(stop_sequences: List[str], tokenizer: AutoTokenizer) -> StoppingCriteriaList:
-    stopping_criteria = StoppingCriteriaList()
-    if stop_sequences is not None:
-        stopping_criteria.append(StopSequenceCriteria(tokenizer(stop_sequences).input_ids))
-
-    return stopping_criteria
+    if batch_size > max_batch_size:
+        raise Exception(f"max supported batch size = {max_batch_size} for now")
