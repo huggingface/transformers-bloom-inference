@@ -7,7 +7,7 @@ import grpc
 
 from ...constants import GRPC_MAX_MSG_SIZE
 from ...models import Model
-from ...utils import create_generate_request
+from ...utils import create_generate_request, print_rank_n
 from .pb import generation_pb2, generation_pb2_grpc
 
 
@@ -47,7 +47,7 @@ def serve(inference_pipeline, port):
     )
     generation_pb2_grpc.add_GenerationServiceServicer_to_server(GenerationServer(inference_pipeline), server)
     server.add_insecure_port(f"[::]:{port}")
-    print(f"About to start server")
+    print_rank_n(f"About to start server")
     server.start()
-    print(f"Started")
+    print_rank_n(f"Started")
     server.wait_for_termination()
