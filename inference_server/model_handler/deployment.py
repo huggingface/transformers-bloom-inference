@@ -100,12 +100,12 @@ class ModelDeployment(MIIServerClient):
                 self._query_in_tensor_parallel(text, generate_kwargs)
             ).result()
 
-            if response.error is None:
+            if response.error:
+                raise Exception(response.error)
+            else:
                 return GenerateResponse(
                     text=[r for r in response.texts], num_generated_tokens=[n for n in response.num_generated_tokens]
                 )
-            else:
-                raise Exception(response.error)
         else:
             if "request" in kwargs:
                 request = kwargs["request"]
