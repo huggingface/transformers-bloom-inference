@@ -36,6 +36,8 @@ from transformers.generation_utils import (
     SampleOutput,
 )
 
+from ..models import Model
+
 
 @dataclass
 class GreedySearchEncoderDecoderOutput(transformers.generation_utils.GreedySearchEncoderDecoderOutput):
@@ -58,6 +60,9 @@ class SampleDecoderOnlyOutput(transformers.generation_utils.SampleDecoderOnlyOut
 
 
 class GenerationMixin(transformers.generation_utils.GenerationMixin):
+    def __init__(self, model: Model) -> None:
+        super().__init__()
+
     def greedy_search(
         self,
         input_ids: torch.LongTensor,
