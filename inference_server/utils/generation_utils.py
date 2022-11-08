@@ -60,8 +60,9 @@ class SampleDecoderOnlyOutput(transformers.generation_utils.SampleDecoderOnlyOut
 
 
 class GenerationMixin(transformers.generation_utils.GenerationMixin):
-    def __init__(self, model: Model) -> None:
+    def __init__(self, model) -> None:
         super().__init__()
+        self.model = model
 
     def greedy_search(
         self,
