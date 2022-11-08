@@ -45,7 +45,7 @@ python -m inference_server.cli --model_name microsoft/bloom-deepspeed-inference-
 
 #### BLOOM server deployment
 
-[server.sh](server.sh) can be used to launch a generation server. Please note that the serving method is synchronous and users have to wait in queue until the preceding requests have been processed.
+[make <model_name>](../Makefile) can be used to launch a generation server. Please note that the serving method is synchronous and users have to wait in queue until the preceding requests have been processed.
 
 #### Benchmark system for BLOOM inference
 
