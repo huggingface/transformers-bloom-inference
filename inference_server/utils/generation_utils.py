@@ -36,8 +36,6 @@ from transformers.generation_utils import (
     SampleOutput,
 )
 
-from ..models import Model
-
 
 @dataclass
 class GreedySearchEncoderDecoderOutput(transformers.generation_utils.GreedySearchEncoderDecoderOutput):
