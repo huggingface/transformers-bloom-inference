@@ -114,7 +114,7 @@ class ModelDeployment(MIIServerClient):
 
             response = self.model.generate(request)
 
-            if type(response) == Exception:
+            if isinstance(response, Exception):
                 raise response
             else:
                 return response
