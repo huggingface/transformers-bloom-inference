@@ -62,6 +62,12 @@ class GenerationMixin(transformers.generation_utils.GenerationMixin):
         super().__init__()
         self.model = model
 
+    def __getattr__(self, name):
+        try:
+            return super().__getattr__(name)
+        except AttributeError:
+            return getattr(self.model, name)
+
     def greedy_search(
         self,
         input_ids: torch.LongTensor,
