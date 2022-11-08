@@ -12,6 +12,8 @@ class HFAccelerateModel(Model):
     def __init__(self, args: Namespace) -> None:
         print_rank_n("Loading model...")
 
+        super().__init__(args)
+
         downloaded_model_path = get_downloaded_model_path(args.model_name)
 
         self.tokenizer = AutoTokenizer.from_pretrained(downloaded_model_path)

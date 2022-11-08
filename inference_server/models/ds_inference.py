@@ -19,6 +19,9 @@ from .model import Model, get_downloaded_model_path
 class DSInferenceModel(Model):
     def __init__(self, args: Namespace) -> None:
         print_rank_n("Loading model...")
+
+        super().__init__(args)
+
         world_size = int(os.getenv("WORLD_SIZE", "1"))
 
         downloaded_model_path = get_downloaded_model_path(args.model_name)

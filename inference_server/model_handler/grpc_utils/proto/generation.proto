@@ -22,4 +22,5 @@ message GenerationRequest {
 message GenerationResponse {
     repeated string texts = 1;
     repeated int32 num_generated_tokens = 2;
+    string error = 3;
 }

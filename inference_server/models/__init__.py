@@ -1,5 +1,5 @@
 from ..constants import DS_INFERENCE, DS_ZERO, HF_ACCELERATE
-from .model import Model, check_batch_size, get_downloaded_model_path
+from .model import Model, get_downloaded_model_path
 
 
 def get_model_class(deployment_framework: str):
