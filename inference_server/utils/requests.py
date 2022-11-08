@@ -13,7 +13,6 @@ class GenerateRequest(BaseModel):
     min_length: int = None
     do_sample: bool = None
     early_stopping: bool = None
-    num_beams: int = None
     temperature: float = None
     top_k: int = None
     top_p: float = None
@@ -29,7 +28,6 @@ class GenerateRequest(BaseModel):
     max_time: float = None
     max_new_tokens: int = None
     decoder_start_token_id: int = None
-    num_beam_groups: int = None
     diversity_penalty: float = None
     forced_bos_token_id: int = None
     forced_eos_token_id: int = None
