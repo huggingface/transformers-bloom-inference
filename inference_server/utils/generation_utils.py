@@ -19,7 +19,7 @@
 
 import warnings
 from dataclasses import dataclass
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 import torch
 import torch.distributed as dist
@@ -67,6 +67,9 @@ class GenerationMixin(transformers.generation_utils.GenerationMixin):
             return super().__getattr__(name)
         except AttributeError:
             return getattr(self.model, name)
+
+    def __call__(self, *args: Any, **kwds: Any) -> Any:
+        return self.model(*args, **kwds)
 
     def greedy_search(
         self,
