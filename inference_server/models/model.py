@@ -1,14 +1,14 @@
 import argparse
 import os
 from functools import partial
-from typing import List
+from typing import Union
 
 import torch
 
 from huggingface_hub import snapshot_download
 from transformers.utils import is_offline_mode
 
-from ..utils import GenerateRequest, GenerateResponse, TokenizeRequest, TokenizeResponse, run_rank_n
+from ..utils import GenerateRequest, GenerateResponse, GenerationMixin, TokenizeRequest, TokenizeResponse, run_rank_n
 
 
 class Model:
@@ -17,22 +17,27 @@ class Model:
         self.pad = None
         self.model = None
         self.input_device = None
-        raise NotImplementedError("This is a dummy class")
+        self.max_input_length = args.max_input_length
+        self.max_batch_size = args.max_batch_size
 
-    def generate(self, request: GenerateRequest) -> GenerateResponse:
-        input_tokens = self.tokenizer(request.text, return_tensors="pt", padding=True)
+    def generate(self, request: GenerateRequest) -> Union[GenerateResponse, Exception]:
+        try:
+            check_batch_size(len(request.text), self.max_batch_size)
 
-        for t in input_tokens:
-            if torch.is_tensor(input_tokens[t]):
-                input_tokens[t] = input_tokens[t].to(self.input_device)
+            input_tokens = self.tokenizer(request.text, return_tensors="pt", padding=True)
+            max_input_length_in_batch = input_tokens.input_ids[0].shape[0]
 
-        with torch.no_grad():
-            output = self.model.generate(
+            check_max_input_length(max_input_length_in_batch, self.max_input_length)
+
+            for t in input_tokens:
+                if torch.is_tensor(input_tokens[t]):
+                    input_tokens[t] = input_tokens[t].to(self.input_device)
+
+            output = GenerationMixin(self.model).generate(
                 **input_tokens,
                 min_length=request.min_length,
                 do_sample=request.do_sample,
                 early_stopping=request.early_stopping,
-                num_beams=request.num_beams,
                 temperature=request.temperature,
                 top_k=request.top_k,
                 top_p=request.top_p,
@@ -48,7 +53,6 @@ class Model:
                 max_time=request.max_time,
                 max_new_tokens=request.max_new_tokens,
                 decoder_start_token_id=request.decoder_start_token_id,
-                num_beam_groups=request.num_beam_groups,
                 diversity_penalty=request.diversity_penalty,
                 forced_bos_token_id=request.forced_bos_token_id,
                 forced_eos_token_id=request.forced_eos_token_id,
@@ -56,23 +60,19 @@ class Model:
                 return_dict_in_generate=True,
             )
 
-        output_tokens = output.sequences
+            output_tokens = output.sequences
+            num_generated_tokens = output.num_generated_tokens.tolist()
 
-        input_token_lengths = [x.shape[0] for x in input_tokens.input_ids]
+            if request.remove_input_from_output:
+                # the generate method's output includes input too. Remove input if
+                # that is requested by the user
+                output_tokens = [x[-i:] if i != 0 else [] for x, i in zip(output_tokens, num_generated_tokens)]
 
-        check_max_input_length(input_token_lengths, request.max_input_length)
+            output_text = self.tokenizer.batch_decode(output_tokens, skip_special_tokens=True)
 
-        output_token_lengths = [x.shape[0] for x in output_tokens]
-        generated_tokens = [o - i for i, o in zip(input_token_lengths, output_token_lengths)]
-
-        if request.remove_input_from_output:
-            # the generate method's output includes input too. Remove input if
-            # that is requested by the user
-            output_tokens = [x[-i:] if i != 0 else [] for x, i in zip(output_tokens, generated_tokens)]
-
-        output_text = self.tokenizer.batch_decode(output_tokens, skip_special_tokens=True)
-
-        return GenerateResponse(text=output_text, num_generated_tokens=generated_tokens)
+            return GenerateResponse(text=output_text, num_generated_tokens=num_generated_tokens)
+        except Exception as exception:
+            return exception
 
     def tokenize(self, request: TokenizeRequest) -> TokenizeResponse:
         response = self.tokenizer(request.text, padding=request.padding)
@@ -94,13 +94,12 @@ def get_downloaded_model_path(model_name: str):
     return f()
 
 
-def check_max_input_length(input_token_lengths: List[int], max_input_length: int) -> None:
+def check_max_input_length(input_token_length: int, max_input_length: int) -> None:
     if max_input_length is None:
         return
 
-    for i in input_token_lengths:
-        if i > max_input_length:
-            raise Exception(f"max supported input length = {max_input_length} for now")
+    if input_token_length > max_input_length:
+        raise Exception(f"max supported input length = {max_input_length} for now")
 
 
 def check_batch_size(batch_size: int, max_batch_size: int) -> None:

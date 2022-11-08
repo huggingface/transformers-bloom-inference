@@ -7,7 +7,6 @@ from pydantic import BaseModel
 
 from .constants import DS_INFERENCE, DS_ZERO, HF_ACCELERATE
 from .model_handler.deployment import ModelDeployment
-from .models import check_batch_size
 from .utils import (
     GenerateRequest,
     TokenizeRequest,
@@ -77,10 +76,8 @@ def generate():
     try:
         x = request.get_json()
         x = GenerateRequest(**x)
-        check_batch_size(len(x.text), args.max_batch_size)
 
         x.max_new_tokens = get_num_tokens_to_generate(x.max_new_tokens, args.allowed_max_new_tokens)
-        x.max_input_length = args.max_input_length
 
         response, total_time_taken = run_and_log_time(partial(model.generate, request=x))
 

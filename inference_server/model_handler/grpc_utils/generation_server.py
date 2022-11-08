@@ -31,9 +31,14 @@ class GenerationServer(generation_pb2_grpc.GenerationServiceServicer):
 
         response = self.model.generate(request)
 
-        response = generation_pb2.GenerationResponse(
-            texts=response.text, num_generated_tokens=response.num_generated_tokens
-        )
+        if isinstance(response, Exception):
+            # if exception occurs, we don't this subprocess to crash
+            response = generation_pb2.GenerationResponse(error=str(response))
+        else:
+            response = generation_pb2.GenerationResponse(
+                texts=response.text, num_generated_tokens=response.num_generated_tokens
+            )
+
         return response
 
 

@@ -54,7 +54,7 @@ class ModelDeployment(MIIServerClient):
                 f"Server is already running on port {self.port_number}, please shutdown or use different port."
             )
 
-        cmd = f"inference_server.model_handler.launch --model_name {args.model_name} --deployment_framework {args.deployment_framework} --dtype {get_str_dtype(args.dtype)} --port {self.port_number}"
+        cmd = f"inference_server.model_handler.launch --model_name {args.model_name} --deployment_framework {args.deployment_framework} --dtype {get_str_dtype(args.dtype)} --port {self.port_number} --max_input_length {args.max_input_length} --max_batch_size {args.max_batch_size}"
 
         if args.deployment_framework in [DS_INFERENCE, DS_ZERO]:
             cmd = f"deepspeed --num_gpus {self.num_gpus} --module {cmd}"
@@ -88,21 +88,24 @@ class ModelDeployment(MIIServerClient):
     def generate(self, **kwargs) -> GenerateResponse:
         if self.use_grpc_server:
             if "request" in kwargs:
-                request = kwargs["request"]
-                text = request.text
-                generate_kwargs = request.get_generate_kwargs()
-                generate_kwargs = self.dict_to_proto(generate_kwargs)
+                text = kwargs["request"].text
+                generate_kwargs = kwargs["request"].get_generate_kwargs()
             else:
                 text = kwargs["text"]
-                generate_kwargs = self.dict_to_proto(kwargs["generate_kwargs"])
+                generate_kwargs = kwargs["generate_kwargs"]
+
+            generate_kwargs = self.dict_to_proto(generate_kwargs)
 
             response = self.asyncio_loop.run_until_complete(
                 self._query_in_tensor_parallel(text, generate_kwargs)
             ).result()
 
-            response = GenerateResponse(
-                text=[r for r in response.texts], num_generated_tokens=[n for n in response.num_generated_tokens]
-            )
+            if response.error:
+                raise Exception(response.error)
+            else:
+                return GenerateResponse(
+                    text=[r for r in response.texts], num_generated_tokens=[n for n in response.num_generated_tokens]
+                )
         else:
             if "request" in kwargs:
                 request = kwargs["request"]
@@ -111,7 +114,10 @@ class ModelDeployment(MIIServerClient):
 
             response = self.model.generate(request)
 
-        return response
+            if isinstance(response, Exception):
+                raise response
+            else:
+                return response
 
     def tokenize(self, request: TokenizeRequest) -> TokenizeResponse:
         if self.use_grpc_server:
