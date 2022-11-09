@@ -1,0 +1,39 @@
+[2022-11-09 10:11:45,182] [INFO] [launch.py:350:main] Process 612222 exits successfully.
+(bloom-server) [gpttest@llm-chic-eval-99 transformers-bloom-inference]$ deepspeed --module --include localhost:2,3 inference_server.benchmark --model_name bigscience/bloom-560m --dtype fp16 --deployment_framework ds_inference --cuda_visible_devices 2 3 --benchmark_cycles 10
+[2022-11-09 10:12:18,554] [WARNING] [runner.py:179:fetch_hostfile] Unable to find hostfile, will proceed with training with local resources only.
+[2022-11-09 10:12:21,572] [INFO] [runner.py:508:main] cmd = /net/llm-shared-nfs/nfs/yelkurdi/conda/miniconda3/envs/bloom-server/bin/python -u -m deepspeed.launcher.launch --world_info=eyJsb2NhbGhvc3QiOiBbMiwgM119 --master_addr=127.0.0.1 --master_port=29500 --module inference_server.benchmark --model_name bigscience/bloom-560m --dtype fp16 --deployment_framework ds_inference --cuda_visible_devices 2 3 --benchmark_cycles 10
+[2022-11-09 10:12:23,292] [INFO] [launch.py:142:main] WORLD INFO DICT: {'localhost': [2, 3]}
+[2022-11-09 10:12:23,292] [INFO] [launch.py:148:main] nnodes=1, num_local_procs=2, node_rank=0
+[2022-11-09 10:12:23,292] [INFO] [launch.py:161:main] global_rank_mapping=defaultdict(<class 'list'>, {'localhost': [0, 1]})
+[2022-11-09 10:12:23,292] [INFO] [launch.py:162:main] dist_world_size=2
+[2022-11-09 10:12:23,292] [INFO] [launch.py:164:main] Setting CUDA_VISIBLE_DEVICES=2,3
+[2022-11-09 10:12:25,946] [INFO] [comm.py:633:init_distributed] Initializing TorchBackend in DeepSpeed with backend nccl
+Loading model...
+Fetching 8 files: 100%|����������������������������������������������������������������������������������������������������������������������������������������������������������������������������������������������| 8/8 [00:00<00:00, 1801.48it/s]
+Fetching 8 files: 100%|����������������������������������������������������������������������������������������������������������������������������������������������������������������������������������������������| 8/8 [00:00<00:00, 4655.81it/s]
+Fetching 8 files: 100%|����������������������������������������������������������������������������������������������������������������������������������������������������������������������������������������������| 8/8 [00:00<00:00, 5101.78it/s]
+[2022-11-09 10:12:37,903] [INFO] [logging.py:68:log_dist] [Rank 0] DeepSpeed info: version=0.7.5+10e9d04c, git-hash=10e9d04c, git-branch=master
+[2022-11-09 10:12:37,903] [INFO] [logging.py:68:log_dist] [Rank 0] quantize_bits = 8 mlp_extra_grouping = False, quantize_groups = 1
+Using /net/llm-shared-nfs/nfs/mayank/.cache/torch_extensions/py38_cu116 as PyTorch extensions root...
+Using /net/llm-shared-nfs/nfs/mayank/.cache/torch_extensions/py38_cu116 as PyTorch extensions root...
+Detected CUDA files, patching ldflags
+Emitting ninja build file /net/llm-shared-nfs/nfs/mayank/.cache/torch_extensions/py38_cu116/transformer_inference/build.ninja...
+Building extension module transformer_inference...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+ninja: no work to do.
+Loading extension module transformer_inference...
+Time to load transformer_inference op: 0.2247319221496582 seconds
+[2022-11-09 10:12:39,666] [INFO] [logging.py:68:log_dist] [Rank 0] DeepSpeed-Inference config: {'layer_id': 0, 'hidden_size': 1024, 'intermediate_size': 4096, 'heads': 16, 'num_hidden_layers': -1, 'fp16': True, 'pre_layer_norm': True, 'local_rank': -1, 'stochastic_mode': False, 'epsilon': 1e-05, 'mp_size': 2, 'q_int8': False, 'scale_attention': True, 'triangular_masking': True, 'local_attention': False, 'window_size': 1, 'rotary_dim': -1, 'rotate_half': False, 'rotate_every_two': True, 'return_tuple': True, 'mlp_after_attn': True, 'mlp_act_func_type': <ActivationFuncType.GELU: 1>, 'specialized_mode': False, 'training_mp_size': 1, 'bigscience_bloom': True, 'max_out_tokens': 1024}
+Loading extension module transformer_inference...
+Time to load transformer_inference op: 0.22364306449890137 seconds
+Loading 1 checkpoint shards: 100%|�������������������������������������������������������������������������������������������������������������������������������������������������������������������������������������| 1/1 [00:01<00:00,  1.45s/it]checkpoint loading time at rank 0: 1.4548065662384033 sec
+Loading 1 checkpoint shards: 100%|�������������������������������������������������������������������������������������������������������������������������������������������������������������������������������������| 1/1 [00:01<00:00,  1.45s/it]
+Model loaded
+Loading 1 checkpoint shards: 100%|�������������������������������������������������������������������������������������������������������������������������������������������������������������������������������������| 1/1 [00:01<00:00,  1.71s/it]checkpoint loading time at rank 1: 1.7085692882537842 sec
+Loading 1 checkpoint shards: 100%|�������������������������������������������������������������������������������������������������������������������������������������������������������������������������������������| 1/1 [00:01<00:00,  1.71s/it]
+generate_kwargs = {'min_length': 100, 'max_new_tokens': 100, 'do_sample': False}
+batch_size = 1
+Free memory : 82585714688 (Bytes)  Total memory: 85007794176 (Bytes)  Setting maximum total tokens (input + output) to 1024
+------------------------------------------------------------
+in = DeepSpeed is a machine learning framework
+out = DeepSpeed is a machine learning framework that can be used to predict the speed of a moving object. The method is based on the idea that the speed of a moving object is proportional to the distance between the object and the camera. The method is used to predict the speed of a moving object in a moving environment. The method is used to predict the speed
