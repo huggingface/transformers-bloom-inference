@@ -37,6 +37,7 @@ class Args:
         self.always_allowed_ip = os.getenv("ALWAYS_ALLOWED_IP")
         self.use_grpc_server = self.deployment_framework in [DS_INFERENCE, DS_ZERO]
         self.cuda_visible_devices = os.getenv("CUDA_VISIBLE_DEVICES", list(range(8)))
+        self.cuda_visible_devices = list(map(int, self.cuda_visible_devices.split(",")))
 
 
 # ------------------------------------------------------

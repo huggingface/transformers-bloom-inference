@@ -50,7 +50,9 @@ def get_argument_parser() -> argparse.ArgumentParser:
     )
     group.add_argument("--max_input_length", type=int, help="max input length")
     group.add_argument("--max_batch_size", type=int, help="max supported batch size")
-    group.add_argument("--cuda_visible_devices", nargs="*", default=list(range(8)), help="number of GPUs to use")
+    group.add_argument(
+        "--cuda_visible_devices", nargs="*", type=int, default=list(range(8)), help="number of GPUs to use"
+    )
 
     return parser
 
