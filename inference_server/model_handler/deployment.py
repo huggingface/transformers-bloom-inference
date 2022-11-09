@@ -14,13 +14,7 @@ from .grpc_utils.pb import generation_pb2, generation_pb2_grpc
 
 
 class ModelDeployment(MIIServerClient):
-    def __init__(
-        self,
-        args: argparse.Namespace,
-        use_grpc_server: bool = False,
-        port: int = 50950,
-        cuda_visible_devices: List[int] = [0],
-    ):
+    def __init__(self, args: argparse.Namespace, use_grpc_server: bool = False, cuda_visible_devices: List[int] = [0]):
         self.cuda_visible_devices = cuda_visible_devices
         self.num_gpus = len(self.cuda_visible_devices)
         self.use_grpc_server = use_grpc_server
@@ -28,7 +22,7 @@ class ModelDeployment(MIIServerClient):
         if self.use_grpc_server:
             self.tokenizer = AutoTokenizer.from_pretrained(get_downloaded_model_path(args.model_name))
 
-            self.port_number = port
+            self.initialize_ports()
 
             self.dtype_proto_field = {
                 str: "svalue",
@@ -45,6 +39,11 @@ class ModelDeployment(MIIServerClient):
         else:
             self.model = get_model_class(args.deployment_framework)(args)
 
+    def initialize_ports(self):
+        self.ports = []
+        for i in range(self.num_gpus):
+            self.ports.append(50950 + self.cuda_visible_devices[i])
+
     def dict_to_proto(self, generate_kwargs: dict) -> dict:
         result = {}
         for k, v in generate_kwargs.items():
@@ -56,19 +55,21 @@ class ModelDeployment(MIIServerClient):
         return result
 
     def _initialize_service(self, args: argparse.Namespace):
-        if self._is_socket_open(self.port_number):
+        if self._is_socket_open(self.ports[0]):
             raise RuntimeError(
-                f"Server is already running on port {self.port_number}, please shutdown or use different port."
+                f"Server is already running on port {self.ports}, please shutdown or use different port."
             )
 
-        cmd = f"inference_server.model_handler.launch --model_name {args.model_name} --deployment_framework {args.deployment_framework} --dtype {get_str_dtype(args.dtype)} --port {self.port_number}"
-
-        if args.max_batch_size is not None:
-            cmd += f" --max_batch_size {args.max_batch_size}"
-        if args.max_input_length is not None:
-            cmd += f" --max_input_length {args.max_input_length}"
-
         if args.deployment_framework in [DS_INFERENCE, DS_ZERO]:
+            ports = " ".join(map(str, self.ports))
+
+            cmd = f"inference_server.model_handler.launch --model_name {args.model_name} --deployment_framework {args.deployment_framework} --dtype {get_str_dtype(args.dtype)} --port {ports}"
+
+            if args.max_batch_size is not None:
+                cmd += f" --max_batch_size {args.max_batch_size}"
+            if args.max_input_length is not None:
+                cmd += f" --max_input_length {args.max_input_length}"
+
             cmd = f"deepspeed --module {cmd}"
         else:
             raise NotImplementedError(f"unsupported deployment_framework: {args.deployment_framework}")
@@ -78,8 +79,8 @@ class ModelDeployment(MIIServerClient):
 
     def _initialize_grpc_client(self):
         self.stubs = []
-        for i in range(self.num_gpus):
-            channel = grpc.aio.insecure_channel(f"localhost:{self.port_number + i}")
+        for i in self.ports:
+            channel = grpc.aio.insecure_channel(f"localhost:{i}")
             stub = generation_pb2_grpc.GenerationServiceStub(channel)
             self.stubs.append(stub)
 
