@@ -14,8 +14,15 @@ from .grpc_utils.pb import generation_pb2, generation_pb2_grpc
 
 
 class ModelDeployment(MIIServerClient):
-    def __init__(self, args: argparse.Namespace, use_grpc_server: bool = False, port: int = 50950, num_gpus: int = 1):
-        self.num_gpus = num_gpus
+    def __init__(
+        self,
+        args: argparse.Namespace,
+        use_grpc_server: bool = False,
+        port: int = 50950,
+        cuda_visible_devices: List[int] = [0],
+    ):
+        self.cuda_visible_devices = cuda_visible_devices
+        self.num_gpus = len(self.cuda_visible_devices)
         self.use_grpc_server = use_grpc_server
 
         if self.use_grpc_server:
@@ -57,7 +64,8 @@ class ModelDeployment(MIIServerClient):
         cmd = f"inference_server.model_handler.launch --model_name {args.model_name} --deployment_framework {args.deployment_framework} --dtype {get_str_dtype(args.dtype)} --port {self.port_number} --max_input_length {args.max_input_length} --max_batch_size {args.max_batch_size}"
 
         if args.deployment_framework in [DS_INFERENCE, DS_ZERO]:
-            cmd = f"deepspeed --num_gpus {self.num_gpus} --module {cmd}"
+            cuda_visible_devices = ",".join(map(str, self.cuda_visible_devices))
+            cmd = f"deepspeed --num_gpus {self.num_gpus} --include localhost:{cuda_visible_devices} --module {cmd}"
         else:
             raise NotImplementedError(f"unsupported deployment_framework: {args.deployment_framework}")
 

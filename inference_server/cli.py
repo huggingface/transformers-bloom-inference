@@ -4,7 +4,7 @@ import sys
 
 from .constants import DS_INFERENCE, DS_ZERO
 from .model_handler import ModelDeployment
-from .utils import create_generate_request, get_argument_parser, parse_args, print_rank_n
+from .utils import get_argument_parser, parse_args, print_rank_n
 
 
 def get_args() -> argparse.Namespace:
@@ -19,7 +19,7 @@ def get_args() -> argparse.Namespace:
 def main() -> None:
     args = get_args()
 
-    model = ModelDeployment(args, use_grpc_server=args.use_grpc_server, num_gpus=args.num_gpus)
+    model = ModelDeployment(args, use_grpc_server=args.use_grpc_server, cuda_visible_devices=args.cuda_visible_devices)
 
     generate_kwargs = args.generate_kwargs
 

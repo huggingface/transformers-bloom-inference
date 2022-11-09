@@ -19,7 +19,7 @@ bloom-176b:
 	DTYPE=fp16 \
 	MAX_INPUT_LENGTH=2048 \
 	MAX_BATCH_SIZE=4 \
-	NUM_GPUS=8 \
+	CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 \
 	gunicorn -t 0 -w 1 -b 127.0.0.1:5000 inference_server.server:app --access-logfile - --access-logformat '%(h)s %(t)s "%(r)s" %(s)s %(b)s'
 
 bloomz-176b:
@@ -29,5 +29,15 @@ bloomz-176b:
 	DTYPE=fp16 \
 	MAX_INPUT_LENGTH=2048 \
 	MAX_BATCH_SIZE=4 \
-	NUM_GPUS=8 \
+	CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 \
+	gunicorn -t 0 -w 1 -b 127.0.0.1:5000 inference_server.server:app --access-logfile - --access-logformat '%(h)s %(t)s "%(r)s" %(s)s %(b)s'
+
+bloomz-560m:
+	TOKENIZERS_PARALLELISM=false \
+	MODEL_NAME=bigscience/bloom-560m \
+	DEPLOYMENT_FRAMEWORK=hf_accelerate \
+	DTYPE=bf16 \
+	MAX_INPUT_LENGTH=2048 \
+	MAX_BATCH_SIZE=32 \
+	CUDA_VISIBLE_DEVICES=0 \
 	gunicorn -t 0 -w 1 -b 127.0.0.1:5000 inference_server.server:app --access-logfile - --access-logformat '%(h)s %(t)s "%(r)s" %(s)s %(b)s'

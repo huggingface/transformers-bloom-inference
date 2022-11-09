@@ -2,6 +2,7 @@ import argparse
 import copy
 import json
 import math
+import os
 import sys
 import time
 import traceback
@@ -47,7 +48,7 @@ def get_argument_parser() -> argparse.ArgumentParser:
         default='{"min_length": 100, "max_new_tokens": 100, "do_sample": false}',
         help="generate parameters. look at https://huggingface.co/docs/transformers/v4.21.1/en/main_classes/text_generation#transformers.generation_utils.GenerationMixin.generate to see the supported parameters",
     )
-    group.add_argument("--num_gpus", type=int, default=1, help="number of GPUs to use")
+    group.add_argument("--cuda_visible_devices", nargs="*", default=list(range(8)), help="number of GPUs to use")
 
     return parser
 
@@ -58,6 +59,8 @@ def parse_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
     args.dtype = get_torch_dtype(args.dtype)
     args.generate_kwargs = json.loads(args.generate_kwargs)
     args.use_pre_sharded_checkpoints = args.model_name in [DS_INFERENCE_BLOOM_FP16, DS_INFERENCE_BLOOM_INT8]
+
+    os.environ["CUDA_VISIBLE_DEVICES"] = ",".join(map(str, args.cuda_visible_devices))
 
     return args
 
