@@ -47,7 +47,17 @@ flan-t5-xxl:
 	MODEL_NAME=google/flan-t5-xxl \
 	DEPLOYMENT_FRAMEWORK=hf_accelerate \
 	DTYPE=bf16 \
-	MAX_INPUT_LENGTH=2048 \
-	MAX_BATCH_SIZE=32 \
+	MAX_INPUT_LENGTH=512 \
+	MAX_BATCH_SIZE=4 \
+	CUDA_VISIBLE_DEVICES=0 \
+	gunicorn -t 0 -w 1 -b 127.0.0.1:5000 inference_server.server:app --access-logfile - --access-logformat '%(h)s %(t)s "%(r)s" %(s)s %(b)s'
+
+ul2:
+	TOKENIZERS_PARALLELISM=false \
+	MODEL_NAME=google/ul2 \
+	DEPLOYMENT_FRAMEWORK=hf_accelerate \
+	DTYPE=bf16 \
+	MAX_INPUT_LENGTH=512 \
+	MAX_BATCH_SIZE=4 \
 	CUDA_VISIBLE_DEVICES=0 \
 	gunicorn -t 0 -w 1 -b 127.0.0.1:5000 inference_server.server:app --access-logfile - --access-logformat '%(h)s %(t)s "%(r)s" %(s)s %(b)s'
