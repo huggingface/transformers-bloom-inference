@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 import subprocess
+import sys
 import time
 from typing import List
 
@@ -93,7 +94,7 @@ class ModelDeployment(MIIServerClient):
 
             cuda_visible_devices = ",".join(map(str, self.cuda_visible_devices))
 
-            cmd = f"deepspeed --master_port {master_port} --include localhost:{cuda_visible_devices} --no_local_rank --no_python -m {cmd}"
+            cmd = f"deepspeed --master_port {master_port} --include localhost:{cuda_visible_devices} --no_local_rank --no_python {sys.executable} -m {cmd}"
         else:
             raise NotImplementedError(f"unsupported deployment_framework: {args.deployment_framework}")
 
