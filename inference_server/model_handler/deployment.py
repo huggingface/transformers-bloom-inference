@@ -1,7 +1,7 @@
 import argparse
 import asyncio
+import os
 import subprocess
-import sys
 import time
 from typing import List
 
@@ -46,6 +46,7 @@ class ModelDeployment(MIIServerClient):
             self.asyncio_loop = asyncio.get_event_loop()
             self._initialize_grpc_client()
         else:
+            os.environ["CUDA_VISIBLE_DEVICES"] = ",".join(map(str, args.cuda_visible_devices))
             self.model = get_model_class(args.deployment_framework)(args)
 
     def initialize_ports(self):
@@ -94,7 +95,7 @@ class ModelDeployment(MIIServerClient):
 
             cuda_visible_devices = ",".join(map(str, self.cuda_visible_devices))
 
-            cmd = f"deepspeed --master_port {master_port} --include localhost:{cuda_visible_devices} --no_local_rank --no_python {sys.executable} -m {cmd}"
+            cmd = f"deepspeed --master_port {master_port} --include localhost:{cuda_visible_devices} --module {cmd}"
         else:
             raise NotImplementedError(f"unsupported deployment_framework: {args.deployment_framework}")
 

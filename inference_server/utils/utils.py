@@ -2,7 +2,6 @@ import argparse
 import copy
 import json
 import math
-import os
 import sys
 import time
 import traceback
@@ -63,8 +62,6 @@ def parse_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
     args.dtype = get_torch_dtype(args.dtype)
     args.generate_kwargs = json.loads(args.generate_kwargs)
     args.use_pre_sharded_checkpoints = args.model_name in [DS_INFERENCE_BLOOM_FP16, DS_INFERENCE_BLOOM_INT8]
-
-    os.environ["CUDA_VISIBLE_DEVICES"] = ",".join(map(str, args.cuda_visible_devices))
 
     return args
 
