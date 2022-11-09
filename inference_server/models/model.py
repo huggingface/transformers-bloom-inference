@@ -86,7 +86,7 @@ def get_downloaded_model_path(model_name: str):
         local_files_only=is_offline_mode(),
         cache_dir=os.getenv("TRANSFORMERS_CACHE", None),
         # maybe move to safetensors in the future
-        ignore_patterns=["*.safetensors", "*.msgpack", "*log*", "*evaluation*", "tensorboard"],
+        ignore_patterns=["*.safetensors", "*.msgpack", "*.h5", "*log*", "*evaluation*", "tensorboard"],
     )
     # download only on 1 process
     run_rank_n(f, barrier=True)
