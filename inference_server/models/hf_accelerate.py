@@ -21,8 +21,11 @@ class HFAccelerateModel(Model):
 
         kwargs = {
             "pretrained_model_name_or_path": downloaded_model_path,
-            "device_map": "balanced_low_0",
         }
+
+        if len(args.cuda_visible_devices) > 0:
+            kwargs["device_map"] = "balanced_low_0"
+
         if args.dtype == torch.int8:
             # using LLM.int8()
             kwargs["load_in_8bit"] = True
