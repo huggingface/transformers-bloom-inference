@@ -5,7 +5,7 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ..utils import print_rank_n
-from .model import Model, get_downloaded_model_path
+from .model import Model, get_downloaded_model_path, get_hf_model_class
 
 
 class HFAccelerateModel(Model):
@@ -32,7 +32,7 @@ class HFAccelerateModel(Model):
 
         # this is the CUDA device for the current process. This will be used
         # later to identify the GPU on which to transfer tensors
-        self.model = AutoModelForCausalLM.from_pretrained(**kwargs)
+        self.model = get_hf_model_class(args.model_name).from_pretrained(**kwargs)
 
         self.model.requires_grad_(False)
         self.model.eval()

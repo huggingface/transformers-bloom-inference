@@ -9,10 +9,10 @@ import torch
 import torch.distributed as dist
 
 import deepspeed
-from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoConfig, AutoTokenizer
 
 from ..utils import print_rank_n, run_rank_n
-from .model import Model, get_downloaded_model_path
+from .model import Model, get_downloaded_model_path, get_hf_model_class
 
 
 # basic DeepSpeed inference model class for benchmarking
@@ -33,7 +33,7 @@ class DSInferenceModel(Model):
         # the actual weights while calling deepspeed.init_inference in the
         # following code
         with deepspeed.OnDevice(dtype=torch.float16, device="meta"):
-            self.model = AutoModelForCausalLM.from_config(
+            self.model = get_hf_model_class(args.model_name).from_config(
                 AutoConfig.from_pretrained(downloaded_model_path), torch_dtype=torch.bfloat16
             )
         self.model = self.model.eval()
