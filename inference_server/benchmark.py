@@ -101,6 +101,8 @@ def get_args() -> argparse.Namespace:
 
     launched_with_deepspeed = args.deployment_framework in [DS_INFERENCE, DS_ZERO]
 
+    assert args.max_batch_size == None, "max_batch_size is not supported with benchmark"
+
     if not launched_with_deepspeed:
         assert args.local_rank == None, "local_rank must be None if not launched with DeepSpeed"
 

@@ -14,8 +14,6 @@ def get_args() -> argparse.Namespace:
     group.add_argument("--local_rank", required=False, type=int, help="used by dist launchers")
     group.add_argument("--cpu_offload", action="store_true", help="whether to activate CPU offload for DS ZeRO")
     group.add_argument("--port", type=int, help="GRPC port")
-    group.add_argument("--max_input_length", type=int, help="max input length")
-    group.add_argument("--max_batch_size", type=int, help="max supported batch size")
 
     args = parse_args(parser)
 
