@@ -23,7 +23,7 @@ class HFAccelerateModel(Model):
             "pretrained_model_name_or_path": downloaded_model_path,
         }
 
-        if len(args.cuda_visible_devices) > 0:
+        if len(args.cuda_visible_devices) > 1:
             kwargs["device_map"] = "balanced_low_0"
 
         if args.dtype == torch.int8:
