@@ -93,7 +93,7 @@ class ModelDeployment(MIIServerClient):
 
             cuda_visible_devices = ",".join(map(str, self.cuda_visible_devices))
 
-            cmd = f"deepspeed --master_port {master_port} --include localhost:{cuda_visible_devices} --no_local_rank --no_python --module {cmd}"
+            cmd = f"deepspeed --master_port {master_port} --include localhost:{cuda_visible_devices} --no_local_rank --module {cmd}"
         else:
             raise NotImplementedError(f"unsupported deployment_framework: {args.deployment_framework}")
 
