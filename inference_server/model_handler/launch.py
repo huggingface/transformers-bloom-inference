@@ -2,7 +2,7 @@ import argparse
 
 import torch.distributed as dist
 
-from ..models import get_model_class
+from ..models import get_model_class, start_inference_engine
 from ..utils import get_argument_parser, parse_args
 from .grpc_utils.generation_server import serve
 
@@ -22,6 +22,7 @@ def get_args() -> argparse.Namespace:
 
 def main():
     args = get_args()
+    start_inference_engine(args.deployment_framework)
     model = get_model_class(args.deployment_framework)(args)
     serve(model, args.port + dist.get_rank())
 
