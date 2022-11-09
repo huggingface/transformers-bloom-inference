@@ -69,8 +69,7 @@ class ModelDeployment(MIIServerClient):
             cmd += f" --max_input_length {args.max_input_length}"
 
         if args.deployment_framework in [DS_INFERENCE, DS_ZERO]:
-            cuda_visible_devices = ",".join(map(str, self.cuda_visible_devices))
-            cmd = f"deepspeed --include localhost:{cuda_visible_devices} --module {cmd}"
+            cmd = f"deepspeed --module {cmd}"
         else:
             raise NotImplementedError(f"unsupported deployment_framework: {args.deployment_framework}")
 
