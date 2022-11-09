@@ -89,7 +89,9 @@ class ModelDeployment(MIIServerClient):
             if args.max_input_length is not None:
                 cmd += f" --max_input_length {args.max_input_length}"
 
-            cmd = f"deepspeed --module {cmd}"
+            master_port = 29500 + min(self.cuda_visible_devices)
+
+            cmd = f"deepspeed --master_port {master_port} --module {cmd}"
         else:
             raise NotImplementedError(f"unsupported deployment_framework: {args.deployment_framework}")
 
