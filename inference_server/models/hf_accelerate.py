@@ -19,9 +19,7 @@ class HFAccelerateModel(Model):
         self.tokenizer = AutoTokenizer.from_pretrained(downloaded_model_path)
         self.pad = self.tokenizer.pad_token_id
 
-        kwargs = {
-            "pretrained_model_name_or_path": downloaded_model_path,
-        }
+        kwargs = {"pretrained_model_name_or_path": downloaded_model_path, "device_map": "auto"}
 
         if len(args.cuda_visible_devices) > 1:
             kwargs["device_map"] = "balanced_low_0"
