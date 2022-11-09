@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 import subprocess
+import time
 from typing import List
 
 import grpc
@@ -9,7 +10,14 @@ from transformers import AutoTokenizer
 
 from ..constants import DS_INFERENCE, DS_ZERO
 from ..models import get_downloaded_model_path, get_model_class
-from ..utils import GenerateResponse, TokenizeRequest, TokenizeResponse, create_generate_request, get_str_dtype
+from ..utils import (
+    GenerateResponse,
+    TokenizeRequest,
+    TokenizeResponse,
+    create_generate_request,
+    get_str_dtype,
+    print_rank_n,
+)
 from .grpc_utils.pb import generation_pb2, generation_pb2_grpc
 
 
@@ -43,6 +51,17 @@ class ModelDeployment(MIIServerClient):
         self.ports = []
         for i in range(self.num_gpus):
             self.ports.append(50950 + self.cuda_visible_devices[i])
+
+    def _wait_until_server_is_live(self):
+        sockets_open = False
+        while not sockets_open:
+            sockets_open = self._is_socket_open(self.ports[0])
+            process_alive = self._is_server_process_alive()
+            if not process_alive:
+                raise RuntimeError("server crashed for some reason, unable to proceed")
+            time.sleep(4)
+            print_rank_n("waiting for server to start...")
+        print_rank_n(f"server has started on {self.ports[0]}")
 
     def dict_to_proto(self, generate_kwargs: dict) -> dict:
         result = {}
