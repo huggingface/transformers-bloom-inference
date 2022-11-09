@@ -61,7 +61,12 @@ class ModelDeployment(MIIServerClient):
                 f"Server is already running on port {self.port_number}, please shutdown or use different port."
             )
 
-        cmd = f"inference_server.model_handler.launch --model_name {args.model_name} --deployment_framework {args.deployment_framework} --dtype {get_str_dtype(args.dtype)} --port {self.port_number} --max_input_length {args.max_input_length} --max_batch_size {args.max_batch_size}"
+        cmd = f"inference_server.model_handler.launch --model_name {args.model_name} --deployment_framework {args.deployment_framework} --dtype {get_str_dtype(args.dtype)} --port {self.port_number}"
+
+        if args.max_batch_size is not None:
+            cmd += f" --max_batch_size {args.max_batch_size}"
+        if args.max_input_length is not None:
+            cmd += f" --max_input_length {args.max_input_length}"
 
         if args.deployment_framework in [DS_INFERENCE, DS_ZERO]:
             cuda_visible_devices = ",".join(map(str, self.cuda_visible_devices))
