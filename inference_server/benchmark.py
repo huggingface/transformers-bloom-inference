@@ -46,7 +46,7 @@ Model loading time + generation time per batch = {initialization_time + latency:
 
 def benchmark_end_to_end(args: argparse.Namespace, zero_activated: bool = False) -> None:
     model, initialization_time = run_and_log_time(
-        partial(ModelDeployment, args=args, use_grpc_server=False, num_gpus=args.num_gpus)
+        partial(ModelDeployment, args=args, use_grpc_server=False, cuda_visible_devices=args.cuda_visible_devices)
     )
 
     request = create_generate_request(get_dummy_batch(args.batch_size), args.generate_kwargs)
@@ -100,6 +100,8 @@ def get_args() -> argparse.Namespace:
     args = parse_args(parser)
 
     launched_with_deepspeed = args.deployment_framework in [DS_INFERENCE, DS_ZERO]
+
+    assert args.max_batch_size == None, "max_batch_size is not supported with benchmark"
 
     if not launched_with_deepspeed:
         assert args.local_rank == None, "local_rank must be None if not launched with DeepSpeed"

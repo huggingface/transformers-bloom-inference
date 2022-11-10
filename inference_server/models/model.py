@@ -6,6 +6,7 @@ from typing import Union
 import torch
 
 from huggingface_hub import snapshot_download
+from transformers import AutoModelForCausalLM, AutoModelForSeq2SeqLM
 from transformers.utils import is_offline_mode
 
 from ..utils import GenerateRequest, GenerateResponse, GenerationMixin, TokenizeRequest, TokenizeResponse, run_rank_n
@@ -86,7 +87,7 @@ def get_downloaded_model_path(model_name: str):
         local_files_only=is_offline_mode(),
         cache_dir=os.getenv("TRANSFORMERS_CACHE", None),
         # maybe move to safetensors in the future
-        ignore_patterns=["*.safetensors", "*log*", "*evaluation*", "tensorboard"],
+        ignore_patterns=["*.safetensors", "*.msgpack", "*.h5", "*log*", "*evaluation*", "tensorboard"],
     )
     # download only on 1 process
     run_rank_n(f, barrier=True)
@@ -108,3 +109,13 @@ def check_batch_size(batch_size: int, max_batch_size: int) -> None:
 
     if batch_size > max_batch_size:
         raise Exception(f"max supported batch size = {max_batch_size} for now")
+
+
+# this is a hack for now
+def get_hf_model_class(model_name: str) -> Union[AutoModelForCausalLM, AutoModelForSeq2SeqLM]:
+    if "bloom" in model_name:
+        return AutoModelForCausalLM
+    elif "t5" in model_name:
+        return AutoModelForSeq2SeqLM
+    elif "ul2" in model_name:
+        return AutoModelForSeq2SeqLM

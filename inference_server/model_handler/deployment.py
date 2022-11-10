@@ -1,6 +1,8 @@
 import argparse
 import asyncio
+import os
 import subprocess
+import time
 from typing import List
 
 import grpc
@@ -9,19 +11,27 @@ from transformers import AutoTokenizer
 
 from ..constants import DS_INFERENCE, DS_ZERO
 from ..models import get_downloaded_model_path, get_model_class
-from ..utils import GenerateResponse, TokenizeRequest, TokenizeResponse, create_generate_request, get_str_dtype
+from ..utils import (
+    GenerateResponse,
+    TokenizeRequest,
+    TokenizeResponse,
+    create_generate_request,
+    get_str_dtype,
+    print_rank_n,
+)
 from .grpc_utils.pb import generation_pb2, generation_pb2_grpc
 
 
 class ModelDeployment(MIIServerClient):
-    def __init__(self, args: argparse.Namespace, use_grpc_server: bool = False, port: int = 50950, num_gpus: int = 1):
-        self.num_gpus = num_gpus
+    def __init__(self, args: argparse.Namespace, use_grpc_server: bool = False, cuda_visible_devices: List[int] = [0]):
+        self.cuda_visible_devices = cuda_visible_devices
+        self.num_gpus = len(self.cuda_visible_devices)
         self.use_grpc_server = use_grpc_server
 
         if self.use_grpc_server:
             self.tokenizer = AutoTokenizer.from_pretrained(get_downloaded_model_path(args.model_name))
 
-            self.port_number = port
+            self.initialize_ports()
 
             self.dtype_proto_field = {
                 str: "svalue",
@@ -36,7 +46,24 @@ class ModelDeployment(MIIServerClient):
             self.asyncio_loop = asyncio.get_event_loop()
             self._initialize_grpc_client()
         else:
+            os.environ["CUDA_VISIBLE_DEVICES"] = ",".join(map(str, args.cuda_visible_devices))
             self.model = get_model_class(args.deployment_framework)(args)
+
+    def initialize_ports(self):
+        self.ports = []
+        for i in range(self.num_gpus):
+            self.ports.append(50950 + self.cuda_visible_devices[i])
+
+    def _wait_until_server_is_live(self):
+        sockets_open = False
+        while not sockets_open:
+            sockets_open = self._is_socket_open(self.ports[0])
+            process_alive = self._is_server_process_alive()
+            if not process_alive:
+                raise RuntimeError("server crashed for some reason, unable to proceed")
+            time.sleep(4)
+            print_rank_n("waiting for server to start...")
+        print_rank_n(f"server has started on {self.ports[0]}")
 
     def dict_to_proto(self, generate_kwargs: dict) -> dict:
         result = {}
@@ -49,15 +76,26 @@ class ModelDeployment(MIIServerClient):
         return result
 
     def _initialize_service(self, args: argparse.Namespace):
-        if self._is_socket_open(self.port_number):
+        if self._is_socket_open(self.ports[0]):
             raise RuntimeError(
-                f"Server is already running on port {self.port_number}, please shutdown or use different port."
+                f"Server is already running on port {self.ports}, please shutdown or use different port."
             )
 
-        cmd = f"inference_server.model_handler.launch --model_name {args.model_name} --deployment_framework {args.deployment_framework} --dtype {get_str_dtype(args.dtype)} --port {self.port_number} --max_input_length {args.max_input_length} --max_batch_size {args.max_batch_size}"
-
         if args.deployment_framework in [DS_INFERENCE, DS_ZERO]:
-            cmd = f"deepspeed --num_gpus {self.num_gpus} --module {cmd}"
+            ports = " ".join(map(str, self.ports))
+
+            cmd = f"inference_server.model_handler.launch --model_name {args.model_name} --deployment_framework {args.deployment_framework} --dtype {get_str_dtype(args.dtype)} --port {ports}"
+
+            if args.max_batch_size is not None:
+                cmd += f" --max_batch_size {args.max_batch_size}"
+            if args.max_input_length is not None:
+                cmd += f" --max_input_length {args.max_input_length}"
+
+            master_port = 29500 + min(self.cuda_visible_devices)
+
+            cuda_visible_devices = ",".join(map(str, self.cuda_visible_devices))
+
+            cmd = f"deepspeed --master_port {master_port} --include localhost:{cuda_visible_devices} --module {cmd}"
         else:
             raise NotImplementedError(f"unsupported deployment_framework: {args.deployment_framework}")
 
@@ -66,8 +104,8 @@ class ModelDeployment(MIIServerClient):
 
     def _initialize_grpc_client(self):
         self.stubs = []
-        for i in range(self.num_gpus):
-            channel = grpc.aio.insecure_channel(f"localhost:{self.port_number + i}")
+        for i in self.ports:
+            channel = grpc.aio.insecure_channel(f"localhost:{i}")
             stub = generation_pb2_grpc.GenerationServiceStub(channel)
             self.stubs.append(stub)
 

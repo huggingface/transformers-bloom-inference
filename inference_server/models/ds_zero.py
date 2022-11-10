@@ -5,11 +5,11 @@ import torch
 import torch.distributed as dist
 
 import deepspeed
-from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoConfig, AutoTokenizer
 from transformers.deepspeed import HfDeepSpeedConfig
 
 from ..utils import print_rank_n
-from .model import Model, get_downloaded_model_path
+from .model import Model, get_downloaded_model_path, get_hf_model_class
 
 
 class DSZeROModel(Model):
@@ -57,7 +57,7 @@ class DSZeROModel(Model):
         self.tokenizer = AutoTokenizer.from_pretrained(downloaded_model_path)
         self.pad = self.tokenizer.pad_token_id
 
-        self.model = AutoModelForCausalLM.from_pretrained(downloaded_model_path, torch_dtype=args.dtype)
+        self.model = get_hf_model_class(args.model_name).from_pretrained(downloaded_model_path, torch_dtype=args.dtype)
         self.model = self.model.eval()
 
         # convert model to a fully sharded model using ZeRO
