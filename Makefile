@@ -50,7 +50,7 @@ flan-t5-xxl:
 	MODEL_NAME=google/flan-t5-xxl \
 	MODEL_CLASS=AutoModelForSeq2SeqLM
 	DEPLOYMENT_FRAMEWORK=hf_accelerate \
-	DTYPE=b16 \
+	DTYPE=bf16 \
 	MAX_INPUT_LENGTH=2048 \
 	MAX_BATCH_SIZE=4 \
 	CUDA_VISIBLE_DEVICES=0 \
@@ -61,7 +61,7 @@ ul2:
 	MODEL_NAME=google/ul2 \
 	MODEL_CLASS=AutoModelForSeq2SeqLM \
 	DEPLOYMENT_FRAMEWORK=hf_accelerate \
-	DTYPE=fp16 \
+	DTYPE=bf16 \
 	MAX_INPUT_LENGTH=2048 \
 	MAX_BATCH_SIZE=4 \
 	CUDA_VISIBLE_DEVICES=0 \
@@ -72,7 +72,7 @@ codegen-mono:
 	MODEL_NAME=Salesforce/codegen-16B-mono \
 	MODEL_CLASS=AutoModelForCausalLM \
 	DEPLOYMENT_FRAMEWORK=hf_accelerate \
-	DTYPE=fp16 \
+	DTYPE=bf16 \
 	MAX_INPUT_LENGTH=2048 \
 	MAX_BATCH_SIZE=4 \
 	CUDA_VISIBLE_DEVICES=0 \
