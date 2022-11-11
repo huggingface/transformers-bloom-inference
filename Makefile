@@ -66,3 +66,14 @@ ul2:
 	MAX_BATCH_SIZE=4 \
 	CUDA_VISIBLE_DEVICES=0 \
 	gunicorn -t 0 -w 1 -b 127.0.0.1:5000 inference_server.server:app --access-logfile - --access-logformat '%(h)s %(t)s "%(r)s" %(s)s %(b)s'
+
+codegen-mono:
+	TOKENIZERS_PARALLELISM=false \
+	MODEL_NAME=Salesforce/codegen-16B-mono \
+	MODEL_CLASS=AutoModelForSeq2SeqLM \
+	DEPLOYMENT_FRAMEWORK=hf_accelerate \
+	DTYPE=fp16 \
+	MAX_INPUT_LENGTH=2048 \
+	MAX_BATCH_SIZE=4 \
+	CUDA_VISIBLE_DEVICES=0 \
+	gunicorn -t 0 -w 1 -b 127.0.0.1:5000 inference_server.server:app --access-logfile - --access-logformat '%(h)s %(t)s "%(r)s" %(s)s %(b)s'
