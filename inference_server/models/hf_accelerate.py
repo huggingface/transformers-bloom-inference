@@ -32,7 +32,7 @@ class HFAccelerateModel(Model):
 
         # this is the CUDA device for the current process. This will be used
         # later to identify the GPU on which to transfer tensors
-        self.model = get_hf_model_class(args.model_name).from_pretrained(**kwargs)
+        self.model = get_hf_model_class(args.model_class).from_pretrained(**kwargs)
 
         self.model.requires_grad_(False)
         self.model.eval()

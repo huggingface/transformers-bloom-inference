@@ -57,7 +57,9 @@ class DSZeROModel(Model):
         self.tokenizer = AutoTokenizer.from_pretrained(downloaded_model_path)
         self.pad = self.tokenizer.pad_token_id
 
-        self.model = get_hf_model_class(args.model_name).from_pretrained(downloaded_model_path, torch_dtype=args.dtype)
+        self.model = get_hf_model_class(args.model_class).from_pretrained(
+            downloaded_model_path, torch_dtype=args.dtype
+        )
         self.model = self.model.eval()
 
         # convert model to a fully sharded model using ZeRO

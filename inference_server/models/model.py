@@ -5,6 +5,7 @@ from typing import Union
 
 import torch
 
+import transformers
 from huggingface_hub import snapshot_download
 from transformers import AutoModelForCausalLM, AutoModelForSeq2SeqLM
 from transformers.utils import is_offline_mode
@@ -112,10 +113,5 @@ def check_batch_size(batch_size: int, max_batch_size: int) -> None:
 
 
 # this is a hack for now
-def get_hf_model_class(model_name: str) -> Union[AutoModelForCausalLM, AutoModelForSeq2SeqLM]:
-    if "bloom" in model_name:
-        return AutoModelForCausalLM
-    elif "t5" in model_name:
-        return AutoModelForSeq2SeqLM
-    elif "ul2" in model_name:
-        return AutoModelForSeq2SeqLM
+def get_hf_model_class(model_class: str) -> Union[AutoModelForCausalLM, AutoModelForSeq2SeqLM]:
+    return getattr(transformers, model_class)

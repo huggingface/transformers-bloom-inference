@@ -38,7 +38,13 @@ def get_argument_parser() -> argparse.ArgumentParser:
         "--model_name",
         type=str,
         required=True,
-        help="model to use",
+        help="model name to use",
+    )
+    group.add_argument(
+        "--model_class",
+        type=str,
+        required=True,
+        help="model class to use",
     )
     group.add_argument("--dtype", type=str, required=True, choices=["bf16", "fp16", "int8"], help="dtype for model")
     group.add_argument(

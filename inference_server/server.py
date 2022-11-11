@@ -29,6 +29,7 @@ class Args:
     def __init__(self) -> None:
         self.deployment_framework = os.getenv("DEPLOYMENT_FRAMEWORK", HF_ACCELERATE)
         self.model_name = os.getenv("MODEL_NAME")
+        self.model_class = os.getenv("MODEL_CLASS")
         self.dtype = get_torch_dtype(os.getenv("DTYPE"))
         self.allowed_max_new_tokens = int(os.getenv("ALLOWED_MAX_NEW_TOKENS", 100))
         self.max_input_length = int(os.getenv("MAX_INPUT_LENGTH", 512))
