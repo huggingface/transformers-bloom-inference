@@ -15,6 +15,7 @@ gen-proto:
 bloom-176b:
 	TOKENIZERS_PARALLELISM=false \
 	MODEL_NAME=microsoft/bloom-deepspeed-inference-fp16 \
+	MODEL_CLASS=AutoModelForCausalLM \
 	DEPLOYMENT_FRAMEWORK=ds_inference \
 	DTYPE=fp16 \
 	MAX_INPUT_LENGTH=2048 \
@@ -25,6 +26,7 @@ bloom-176b:
 bloomz-176b:
 	TOKENIZERS_PARALLELISM=false \
 	MODEL_NAME=bigscience/bloomz \
+	MODEL_CLASS=AutoModelForCausalLM \
 	DEPLOYMENT_FRAMEWORK=ds_inference \
 	DTYPE=fp16 \
 	MAX_INPUT_LENGTH=2048 \
@@ -32,9 +34,10 @@ bloomz-176b:
 	CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 \
 	gunicorn -t 0 -w 1 -b 127.0.0.1:5000 inference_server.server:app --access-logfile - --access-logformat '%(h)s %(t)s "%(r)s" %(s)s %(b)s'
 
-bloomz-560m:
+bloom-560m:
 	TOKENIZERS_PARALLELISM=false \
 	MODEL_NAME=bigscience/bloom-560m \
+	MODEL_CLASS=AutoModelForCausalLM \
 	DEPLOYMENT_FRAMEWORK=hf_accelerate \
 	DTYPE=bf16 \
 	MAX_INPUT_LENGTH=2048 \
@@ -45,6 +48,7 @@ bloomz-560m:
 flan-t5-xxl:
 	TOKENIZERS_PARALLELISM=false \
 	MODEL_NAME=google/flan-t5-xxl \
+	MODEL_CLASS=AutoModelForSeq2SeqLM
 	DEPLOYMENT_FRAMEWORK=hf_accelerate \
 	DTYPE=fp \
 	MAX_INPUT_LENGTH=2048 \
@@ -55,16 +59,7 @@ flan-t5-xxl:
 ul2:
 	TOKENIZERS_PARALLELISM=false \
 	MODEL_NAME=google/ul2 \
-	DEPLOYMENT_FRAMEWORK=hf_accelerate \
-	DTYPE=fp16 \
-	MAX_INPUT_LENGTH=2048 \
-	MAX_BATCH_SIZE=4 \
-	CUDA_VISIBLE_DEVICES=0 \
-	gunicorn -t 0 -w 1 -b 127.0.0.1:5000 inference_server.server:app --access-logfile - --access-logformat '%(h)s %(t)s "%(r)s" %(s)s %(b)s'
-
-codegen-mono:
-	TOKENIZERS_PARALLELISM=false \
-	MODEL_NAME=google/ul2 \
+	MODEL_CLASS=AutoModelForSeq2SeqLM \
 	DEPLOYMENT_FRAMEWORK=hf_accelerate \
 	DTYPE=fp16 \
 	MAX_INPUT_LENGTH=2048 \

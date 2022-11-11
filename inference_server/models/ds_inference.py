@@ -33,7 +33,7 @@ class DSInferenceModel(Model):
         # the actual weights while calling deepspeed.init_inference in the
         # following code
         with deepspeed.OnDevice(dtype=torch.float16, device="meta"):
-            self.model = get_hf_model_class(args.model_name).from_config(
+            self.model = get_hf_model_class(args.model_class).from_config(
                 AutoConfig.from_pretrained(downloaded_model_path), torch_dtype=torch.bfloat16
             )
         self.model = self.model.eval()
