@@ -50,7 +50,7 @@ flan-t5-xxl:
 	MODEL_NAME=google/flan-t5-xxl \
 	MODEL_CLASS=AutoModelForSeq2SeqLM
 	DEPLOYMENT_FRAMEWORK=hf_accelerate \
-	DTYPE=fp \
+	DTYPE=b16 \
 	MAX_INPUT_LENGTH=2048 \
 	MAX_BATCH_SIZE=4 \
 	CUDA_VISIBLE_DEVICES=0 \
