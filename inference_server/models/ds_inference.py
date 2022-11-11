@@ -12,7 +12,7 @@ import deepspeed
 from transformers import AutoConfig, AutoTokenizer
 
 from ..utils import print_rank_n, run_rank_n
-from .model import Model, get_downloaded_model_path, get_hf_model_class
+from .model import Model, get_downloaded_model_path, get_hf_model_class, load_tokenizer
 
 
 # basic DeepSpeed inference model class for benchmarking
@@ -26,7 +26,7 @@ class DSInferenceModel(Model):
 
         downloaded_model_path = get_downloaded_model_path(args.model_name)
 
-        self.tokenizer = AutoTokenizer.from_pretrained(downloaded_model_path)
+        self.tokenizer = load_tokenizer(downloaded_model_path)
         self.pad = self.tokenizer.pad_token_id
 
         # create dummy tensors for allocating space which will be filled with

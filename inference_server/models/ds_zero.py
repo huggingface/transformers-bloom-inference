@@ -9,7 +9,7 @@ from transformers import AutoConfig, AutoTokenizer
 from transformers.deepspeed import HfDeepSpeedConfig
 
 from ..utils import print_rank_n
-from .model import Model, get_downloaded_model_path, get_hf_model_class
+from .model import Model, get_downloaded_model_path, get_hf_model_class, load_tokenizer
 
 
 class DSZeROModel(Model):
@@ -54,7 +54,7 @@ class DSZeROModel(Model):
         # this tells from_pretrained to instantiate directly on gpus
         dschf = HfDeepSpeedConfig(ds_config)
 
-        self.tokenizer = AutoTokenizer.from_pretrained(downloaded_model_path)
+        self.tokenizer = load_tokenizer(downloaded_model_path)
         self.pad = self.tokenizer.pad_token_id
 
         self.model = get_hf_model_class(args.model_class).from_pretrained(

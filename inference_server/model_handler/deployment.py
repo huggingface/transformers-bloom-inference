@@ -13,7 +13,7 @@ from mii.server_client import MIIServerClient
 from transformers import AutoTokenizer
 
 from ..constants import DS_INFERENCE, DS_ZERO
-from ..models import get_downloaded_model_path, get_model_class
+from ..models import get_downloaded_model_path, get_model_class, load_tokenizer
 from ..utils import (
     GenerateResponse,
     TokenizeRequest,
@@ -32,7 +32,7 @@ class ModelDeployment(MIIServerClient):
         self.use_grpc_server = use_grpc_server
 
         if self.use_grpc_server:
-            self.tokenizer = AutoTokenizer.from_pretrained(get_downloaded_model_path(args.model_name))
+            self.tokenizer = load_tokenizer(get_downloaded_model_path(args.model_name))
 
             self.initialize_ports()
 

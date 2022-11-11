@@ -5,7 +5,7 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from ..utils import print_rank_n
-from .model import Model, get_downloaded_model_path, get_hf_model_class
+from .model import Model, get_downloaded_model_path, get_hf_model_class, load_tokenizer
 
 
 class HFAccelerateModel(Model):
@@ -16,7 +16,7 @@ class HFAccelerateModel(Model):
 
         downloaded_model_path = get_downloaded_model_path(args.model_name)
 
-        self.tokenizer = AutoTokenizer.from_pretrained(downloaded_model_path)
+        self.tokenizer = load_tokenizer(downloaded_model_path)
         self.pad = self.tokenizer.pad_token_id
 
         kwargs = {"pretrained_model_name_or_path": downloaded_model_path, "device_map": "auto"}
