@@ -7,7 +7,7 @@ import torch
 
 import transformers
 from huggingface_hub import snapshot_download
-from transformers import AutoModelForCausalLM, AutoModelForSeq2SeqLM
+from transformers import AutoModelForCausalLM, AutoModelForSeq2SeqLM, AutoTokenizer
 from transformers.utils import is_offline_mode
 
 from ..utils import GenerateRequest, GenerateResponse, GenerationMixin, TokenizeRequest, TokenizeResponse, run_rank_n
@@ -115,3 +115,13 @@ def check_batch_size(batch_size: int, max_batch_size: int) -> None:
 # this is a hack for now
 def get_hf_model_class(model_class: str) -> Union[AutoModelForCausalLM, AutoModelForSeq2SeqLM]:
     return getattr(transformers, model_class)
+
+
+def load_tokenizer(model_name: str) -> AutoTokenizer:
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+    if tokenizer.pad_token_id is None:
+        tokenizer.add_special_tokens({"pad_token": "[PAD]"})
+
+    tokenizer.padding_side = "left"
+    return tokenizer
