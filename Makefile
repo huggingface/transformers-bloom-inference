@@ -70,7 +70,7 @@ ul2:
 codegen-mono:
 	TOKENIZERS_PARALLELISM=false \
 	MODEL_NAME=Salesforce/codegen-16B-mono \
-	MODEL_CLASS=AutoModelForSeq2SeqLM \
+	MODEL_CLASS=AutoModelForCausalLM \
 	DEPLOYMENT_FRAMEWORK=hf_accelerate \
 	DTYPE=fp16 \
 	MAX_INPUT_LENGTH=2048 \
