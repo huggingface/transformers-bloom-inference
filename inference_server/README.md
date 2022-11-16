@@ -35,12 +35,12 @@ Example: generate_kwargs =
 
 1. using HF accelerate
 ```shell
-python -m inference_server.cli --model_name bigscience/bloom --dtype bf16 --deployment_framework hf_accelerate --generate_kwargs '{"min_length": 100, "max_new_tokens": 100, "do_sample": false}'
+python -m inference_server.cli --model_name bigscience/bloom --model_class AutoModelForCausalLM --dtype bf16 --deployment_framework hf_accelerate --generate_kwargs '{"min_length": 100, "max_new_tokens": 100, "do_sample": false}'
 ```
 
 2. using DS inference
 ```shell
-python -m inference_server.cli --model_name microsoft/bloom-deepspeed-inference-fp16 --dtype fp16 --deployment_framework ds_inference --generate_kwargs '{"min_length": 100, "max_new_tokens": 100, "do_sample": false}'
+python -m inference_server.cli --model_name microsoft/bloom-deepspeed-inference-fp16 --model_class AutoModelForCausalLM --dtype fp16 --deployment_framework ds_inference --generate_kwargs '{"min_length": 100, "max_new_tokens": 100, "do_sample": false}'
 ```
 
 #### BLOOM server deployment
@@ -51,21 +51,21 @@ python -m inference_server.cli --model_name microsoft/bloom-deepspeed-inference-
 
 1. using HF accelerate
 ```shell
-python -m inference_server.benchmark --model_name bigscience/bloom --dtype bf16 --deployment_framework hf_accelerate --benchmark_cycles 5
+python -m inference_server.benchmark --model_name bigscience/bloom --model_class AutoModelForCausalLM --dtype bf16 --deployment_framework hf_accelerate --benchmark_cycles 5
 ```
 
 2. using DS inference
 ```shell
-deepspeed --num_gpus 8 --module inference_server.benchmark --model_name bigscience/bloom --dtype fp16 --deployment_framework ds_inference --benchmark_cycles 5
+deepspeed --num_gpus 8 --module inference_server.benchmark --model_name bigscience/bloom --model_class AutoModelForCausalLM --dtype fp16 --deployment_framework ds_inference --benchmark_cycles 5
 ```
 alternatively, to load model faster:
 ```shell
-deepspeed --num_gpus 8 --module inference_server.benchmark --model_name microsoft/bloom-deepspeed-inference-fp16 --dtype fp16 --deployment_framework ds_inference --benchmark_cycles 5
+deepspeed --num_gpus 8 --module inference_server.benchmark --model_name microsoft/bloom-deepspeed-inference-fp16 --model_class AutoModelForCausalLM --dtype fp16 --deployment_framework ds_inference --benchmark_cycles 5
 ```
 
 3. using DS ZeRO
 ```shell
-deepspeed --num_gpus 8 --module inference_server.benchmark --model_name bigscience/bloom --dtype bf16 --deployment_framework ds_zero --benchmark_cycles 5
+deepspeed --num_gpus 8 --module inference_server.benchmark --model_name bigscience/bloom --model_class AutoModelForCausalLM --dtype bf16 --deployment_framework ds_zero --benchmark_cycles 5
 ```
 
 ## Support
