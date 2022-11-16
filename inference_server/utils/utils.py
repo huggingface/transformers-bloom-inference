@@ -58,6 +58,10 @@ def get_argument_parser() -> argparse.ArgumentParser:
     group.add_argument(
         "--cuda_visible_devices", nargs="*", type=int, default=list(range(8)), help="number of GPUs to use"
     )
+    group.add_argument(
+        "--serving_port", type=int, default=29000,
+        help="http port for flask server to serve model. used with flask_serve"
+    )
 
     return parser
 

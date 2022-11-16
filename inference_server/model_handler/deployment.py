@@ -87,7 +87,7 @@ class ModelDeployment(MIIServerClient):
         if args.deployment_framework in [DS_INFERENCE, DS_ZERO]:
             ports = " ".join(map(str, self.ports))
 
-            cmd = f"inference_server.model_handler.launch --model_name {args.model_name} --deployment_framework {args.deployment_framework} --dtype {get_str_dtype(args.dtype)} --port {ports}"
+            cmd = f"inference_server.model_handler.launch --model_name {args.model_name} --model_class {args.model_class} --deployment_framework {args.deployment_framework} --dtype {get_str_dtype(args.dtype)} --port {ports}"
 
             if args.max_batch_size is not None:
                 cmd += f" --max_batch_size {args.max_batch_size}"
