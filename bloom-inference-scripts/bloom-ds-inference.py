@@ -44,7 +44,7 @@ num_tokens = 100
 parser = ArgumentParser()
 
 parser.add_argument("--name", required=True, type=str, help="model_name")
-parser.add_argument("--dtype", type=str, help="float16 or int8", choices=["int8", "float16"], default="float16")
+parser.add_argument("--dtype", type=str, help="float16 or int8 or int4", choices=["int8", "float16", "int4"], default="float16")
 parser.add_argument("--local_rank", required=False, type=int, help="used by dist launchers")
 parser.add_argument("--batch_size", default=1, type=int, help="batch size")
 parser.add_argument("--benchmark", action="store_true", help="additionally run benchmark")
@@ -100,7 +100,7 @@ def get_checkpoint_files(model_name_or_path):
 
 
 model_name = args.name
-infer_dtype = args.dtype
+infer_dtype = args.dtype if args.dtype != 'int4' else 'int8'
 
 tp_presharded_mode = True if model_name in tp_presharded_models else False
 
@@ -191,6 +191,7 @@ model = deepspeed.init_inference(
     mp_size=world_size,
     base_dir=repo_root,
     dtype=getattr(torch, infer_dtype),
+    quantization_bits=8 if args.dtype == 'int8' else 4,
     checkpoint=checkpoints_json,
     **kwargs,
 )
@@ -227,7 +228,7 @@ if args.batch_size > len(input_sentences):
     # dynamically extend to support larger bs by repetition
     input_sentences *= math.ceil(args.batch_size / len(input_sentences))
 
-generate_kwargs = dict(max_new_tokens=num_tokens, do_sample=False)
+generate_kwargs = dict(max_new_tokens=num_tokens, do_sample=True)
 
 
 print_rank0(f"Generate args {generate_kwargs}")
