@@ -172,6 +172,9 @@ if args.benchmark:
 
 if kernel_inject:
     kwargs = dict(replace_with_kernel_inject=True)
+    # specify number of bits to choose between in4/int8
+    if args.dtype == 'int8' or args.dtype == 'int4':
+        kwargs.update({'quantization_bits': 8 if args.dtype == 'int8' else 4})
 else:
     kwargs = dict(injection_policy={BloomBlock: ("self_attention.dense", "mlp.dense_4h_to_h")})
 
@@ -191,7 +194,6 @@ model = deepspeed.init_inference(
     mp_size=world_size,
     base_dir=repo_root,
     dtype=getattr(torch, infer_dtype),
-    quantization_bits=8 if args.dtype == 'int8' else 4,
     checkpoint=checkpoints_json,
     **kwargs,
 )
@@ -228,7 +230,7 @@ if args.batch_size > len(input_sentences):
     # dynamically extend to support larger bs by repetition
     input_sentences *= math.ceil(args.batch_size / len(input_sentences))
 
-generate_kwargs = dict(max_new_tokens=num_tokens, do_sample=True)
+generate_kwargs = dict(max_new_tokens=num_tokens, do_sample=False)
 
 
 print_rank0(f"Generate args {generate_kwargs}")
