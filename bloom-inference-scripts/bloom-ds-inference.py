@@ -174,7 +174,10 @@ if kernel_inject:
     kwargs = dict(replace_with_kernel_inject=True)
     # specify number of bits to choose between in4/int8
     if args.dtype == 'int8' or args.dtype == 'int4':
-        kwargs.update({'quantization_bits': 8 if args.dtype == 'int8' else 4})
+        quant_config = "{'quant': {'enabled':True, 'weight':{'num_bits': 8}}}"
+        kwargs.update(eval(quant_config))
+        if args.dtype == 'int4':
+            kwargs['quant']['weight']['num_bits'] = 4
 else:
     kwargs = dict(injection_policy={BloomBlock: ("self_attention.dense", "mlp.dense_4h_to_h")})
 
