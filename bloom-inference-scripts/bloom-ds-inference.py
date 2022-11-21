@@ -171,13 +171,19 @@ if args.benchmark:
     deepspeed.runtime.utils.see_memory_usage("pre-ds-inference-init", force=True)
 
 if kernel_inject:
-    kwargs = dict(replace_with_kernel_inject=True)
-    # specify number of bits to choose between in4/int8
-    if args.dtype == 'int8' or args.dtype == 'int4':
-        quant_config = "{'quant': {'enabled':True, 'weight':{'num_bits': 8}}}"
-        kwargs.update(eval(quant_config))
-        if args.dtype == 'int4':
-            kwargs['quant']['weight']['num_bits'] = 4
+    if args.dtype == 'int8':
+        bits = 4
+    if args.dtype == 'int4':
+        bits = 8
+    ds_config = {
+        "replace_with_kernel_inject" : True,
+        "quant" : {
+            "enabled" : True,
+            "weight" : {
+                "num_bits" : bits
+            }
+        }
+    }
 else:
     kwargs = dict(injection_policy={BloomBlock: ("self_attention.dense", "mlp.dense_4h_to_h")})
 
@@ -194,6 +200,7 @@ else:
 # checkpoints_json=None
 model = deepspeed.init_inference(
     model,
+    config=ds_config,
     mp_size=world_size,
     base_dir=repo_root,
     dtype=getattr(torch, infer_dtype),
