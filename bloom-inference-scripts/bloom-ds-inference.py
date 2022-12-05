@@ -66,21 +66,22 @@ def print_rank0(*msg):
 ### Model loading and instantiating on GPUs
 
 
-def get_repo_root(model_name_or_path):
+def get_repo_root(model_name_or_path, is_download=True):
     # checks if online or not
     if is_offline_mode():
         print_rank0("Offline mode: forcing local_files_only=True")
 
-    # download only on first process
-    if rank == 0:
-        snapshot_download(
-            model_name_or_path,
-            local_files_only=is_offline_mode(),
-            cache_dir=os.getenv("TRANSFORMERS_CACHE", None),
-            ignore_patterns=["*.safetensors"],
-        )
-
-    dist.barrier()
+    if is_download:
+        # download only on first process
+        if rank == 0:
+            snapshot_download(
+                model_name_or_path,
+                local_files_only=is_offline_mode(),
+                cache_dir=os.getenv("TRANSFORMERS_CACHE", None),
+                ignore_patterns=["*.safetensors"],
+            )
+    
+        dist.barrier()
 
     return snapshot_download(
         model_name_or_path,
@@ -91,7 +92,7 @@ def get_repo_root(model_name_or_path):
 
 
 def get_checkpoint_files(model_name_or_path):
-    cached_repo_dir = get_repo_root(model_name_or_path)
+    cached_repo_dir = get_repo_root(model_name_or_path, False)
 
     # extensions: .bin | .pt
     # creates a list of paths from all downloaded files in cache dir
