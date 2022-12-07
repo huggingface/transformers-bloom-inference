@@ -151,18 +151,11 @@ if args.benchmark:
 checkpoints_json = "checkpoints.json"
 
 
-def write_checkponts_json():
-
-    with io.open(checkpoints_json, "w", encoding="utf-8") as f:
-
-        # checkpoint_files = glob.glob(f"{checkpoint_dir}/*bin")
-        checkpoint_files = get_checkpoint_files(model_name)
-
-        # print("Checkpoint files:", checkpoint_files)
-
+def write_checkpoints_json():
+    checkpoint_files = get_checkpoint_files(model_name)
+    if rank == 0:
         data = {"type": "BLOOM", "checkpoints": checkpoint_files, "version": 1.0}
-
-        json.dump(data, f)
+        json.dump(data, open(checkpoints_json, "w"))
 
 
 if args.benchmark:
@@ -181,8 +174,7 @@ if tp_presharded_mode:
     checkpoints_json = os.path.join(repo_root, "ds_inference_config.json")
 else:
     # for normal bloom repo we need to write the checkpoints config file
-    if rank == 0:
-        write_checkponts_json()
+    write_checkpoints_json()
     dist.barrier()
 
 # checkpoints_json=None
