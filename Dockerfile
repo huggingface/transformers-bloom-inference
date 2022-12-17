@@ -30,12 +30,17 @@ COPY Makefile Makefile
 COPY LICENSE LICENSE
 
 # necessary stuff
-RUN pip install torch --extra-index-url https://download.pytorch.org/whl/cu116 \
+RUN pip install torch==1.12.1+cu116 --extra-index-url https://download.pytorch.org/whl/cu116 \
     transformers \
-    deepspeed==0.7.6 \
+    deepspeed==0.7.5 \
     deepspeed-mii==0.0.2 \
     accelerate \
     gunicorn \
+    flask \
+    flask_api \ 
+    pydantic \
+    huggingface_hub \
+	grpcio-tools==1.50.0 \
     --no-cache-dir
 
 # install grpc and compile protos
@@ -49,7 +54,13 @@ RUN conda clean -ya
 EXPOSE ${PORT}
 
 # change this as you like 🤗
-ENV TRANSFORMERS_CACHE=/transformers_cache/
-ENV HUGGINGFACE_HUB_CACHE=${TRANSFORMERS_CACHE}
+ENV TRANSFORMERS_CACHE=/transformers_cache/ \
+    HUGGINGFACE_HUB_CACHE=${TRANSFORMERS_CACHE} \
+    HOME=/homedir
+
+# Runs as arbitrary user in OpenShift
+RUN mkdir ${HOME} && chmod g+wx ${HOME} && \
+    mkdir tmp && chmod -R g+w tmp
+# RUN chmod g+w Makefile
 
 CMD make bloom-176b
