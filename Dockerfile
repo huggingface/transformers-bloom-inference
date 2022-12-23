@@ -26,9 +26,6 @@ FROM conda as conda_env
 # update conda
 RUN conda update -n base -c defaults conda -y
 
-COPY Makefile Makefile
-COPY LICENSE LICENSE
-
 # necessary stuff
 RUN pip install torch==1.12.1+cu116 --extra-index-url https://download.pytorch.org/whl/cu116 \
     transformers \
@@ -43,9 +40,12 @@ RUN pip install torch==1.12.1+cu116 --extra-index-url https://download.pytorch.o
 	grpcio-tools==1.50.0 \
     --no-cache-dir
 
-# install grpc and compile protos
+# copy the code
 COPY inference_server inference_server
+COPY Makefile Makefile
+COPY LICENSE LICENSE
 
+# install grpc and compile protos
 RUN make gen-proto
 
 # clean conda env
@@ -58,9 +58,10 @@ ENV TRANSFORMERS_CACHE=/transformers_cache/ \
     HUGGINGFACE_HUB_CACHE=${TRANSFORMERS_CACHE} \
     HOME=/homedir
 
-# Runs as arbitrary user in OpenShift
 RUN mkdir ${HOME} && chmod g+wx ${HOME} && \
     mkdir tmp && chmod -R g+w tmp
-# RUN chmod g+w Makefile
+
+# for debugging
+# RUN chmod -R g+w inference_server && chmod g+w Makefile
 
 CMD make bloom-176b
