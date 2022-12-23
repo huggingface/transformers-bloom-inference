@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Large Models Playground</title>
+    <link href="{{ url_for('static', path='css/style.css') }}" rel="stylesheet">
+    <script type="module" src="{{ url_for('static', path='js/index.js') }}"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+
+<body>
+    <div id="left-column">
+        <textarea placeholder="Input Prompt" id="text-input" style="color: black; background-color: white;"
+            rows="47"></textarea>
+    </div>
+
+    <div id="right-column">
+        <div>
+            <textbox id="temperature-textbox">
+                temperature = 1
+            </textbox>
+            <input type="range" min="0" max="1" value="1" step="0.01" class="slider" id="temperature-slider">
+        </div>
+
+        <div>
+            <textbox id="top_k-textbox">
+                top_k = 50
+            </textbox>
+            <input type="range" min="1" max="100" value="50" class="slider" id="top_k-slider">
+        </div>
+
+        <div>
+            <textbox id="top_p-textbox">
+                top_p = 1
+            </textbox>
+            <input type="range" min="0" max="1" step="0.01" value="1" class="slider" id="top_p-slider">
+        </div>
+
+        <div>
+            <textbox style="float: left;">
+                max_new_tokens =
+            </textbox>
+            <input type="text" value="40" id="max-new-tokens-input">
+        </div>
+
+        <div>
+            <textbox id="repetition_penalty-textbox">
+                repetition_penalty = 1
+            </textbox>
+            <input type="range" min="1" max="3" step="0.01" value="1" class="slider" id="repetition_penalty-slider">
+        </div>
+
+        <button id="submit-button" style="margin-top: 10px;">Submit</button>
+
+        <div style="margin-top: 10px;">
+            <textarea id="log-output" rows="7" style="color: black; background-color: lightblue;" readonly></textarea>
+        </div>
+    </div>
+</body>
+
+</html>
