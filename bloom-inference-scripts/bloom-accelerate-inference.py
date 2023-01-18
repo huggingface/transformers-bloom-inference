@@ -149,11 +149,11 @@ if args.benchmark:
         generated = generate()
         total_new_tokens_generated += sum(new_tokens for _, _, new_tokens in generated)
     torch.cuda.synchronize()
-    througput = (time.time() - t0) / (total_new_tokens_generated)
+    throughput = (time.time() - t0) / (total_new_tokens_generated)
     print_rank0(
         f"""
 *** Performance stats:
-Throughput per token including tokenize: {througput*1000:.2f} msecs
+Throughput per token including tokenize: {throughput*1000:.2f} msecs
 Start to ready to generate: {t_ready - t_start:.3f} secs
 Tokenize and generate {total_new_tokens_generated} (bs={args.batch_size}) tokens: {t_generate_span:.3f} secs
 Start to finish: {t_ready - t_start + t_generate_span:.3f} secs
