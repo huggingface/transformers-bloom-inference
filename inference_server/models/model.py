@@ -1,30 +1,32 @@
 import argparse
-import os
-from functools import partial
 from typing import Union
 
 import torch
 
 import transformers
-from huggingface_hub import snapshot_download
 from transformers import AutoModelForCausalLM, AutoModelForSeq2SeqLM, AutoTokenizer
-from transformers.utils import is_offline_mode
 
-from ..utils import GenerateRequest, GenerateResponse, GenerationMixin, TokenizeRequest, TokenizeResponse, run_rank_n
+from ..utils import GenerateRequest, GenerateResponse, TokenizeRequest, TokenizeResponse
 
 
 class Model:
     def __init__(self, args: argparse.Namespace) -> None:
-        self.tokenizer = None
-        self.pad = None
         self.model = None
         self.input_device = None
         self.max_input_length = args.max_input_length
         self.max_batch_size = args.max_batch_size
 
+    def post_init(self, model_name: str) -> None:
+        self.tokenizer = load_tokenizer(model_name)
+
+        self.pad = self.tokenizer.pad_token_id
+        self.prefix_token_id = self.tokenizer("A")["input_ids"][0]
+
     def generate(self, request: GenerateRequest) -> Union[GenerateResponse, Exception]:
         try:
-            check_batch_size(len(request.text), self.max_batch_size)
+            batch_size = len(request.text)
+
+            check_batch_size(batch_size, self.max_batch_size)
 
             input_tokens = self.tokenizer(request.text, return_tensors="pt", padding=True)
             max_input_length_in_batch = input_tokens.input_ids[0].shape[0]
@@ -35,7 +37,9 @@ class Model:
                 if torch.is_tensor(input_tokens[t]):
                     input_tokens[t] = input_tokens[t].to(self.input_device)
 
-            output = GenerationMixin(self.model).generate(
+            num_input_tokens = input_tokens["input_ids"].shape[1]
+
+            output = self.model.generate(
                 **input_tokens,
                 min_length=request.min_length,
                 do_sample=request.do_sample,
@@ -63,37 +67,28 @@ class Model:
             )
 
             output_tokens = output.sequences
-            num_generated_tokens = output.num_generated_tokens.tolist()
+
+            generated_tokens = output_tokens[:, num_input_tokens:]
+            num_generated_tokens = (generated_tokens != self.pad).sum(dim=-1).tolist()
 
             if request.remove_input_from_output:
+                # create the dummy prefix for detokenization
+                prefix_to_add = torch.tensor([[self.prefix_token_id]] * batch_size).to(self.input_device)
                 # the generate method's output includes input too. Remove input if
                 # that is requested by the user
-                output_tokens = [x[-i:] if i != 0 else [] for x, i in zip(output_tokens, num_generated_tokens)]
+                generated_tokens = torch.cat([prefix_to_add, generated_tokens], dim=1)
+                generated_text = self.tokenizer.batch_decode(generated_tokens, skip_special_tokens=True)
+                generated_text = [i[1:] for i in generated_text]
+            else:
+                generated_text = self.tokenizer.batch_decode(output_tokens, skip_special_tokens=True)
 
-            output_text = self.tokenizer.batch_decode(output_tokens, skip_special_tokens=True)
-
-            return GenerateResponse(text=output_text, num_generated_tokens=num_generated_tokens)
+            return GenerateResponse(text=generated_text, num_generated_tokens=num_generated_tokens)
         except Exception as exception:
             return exception
 
     def tokenize(self, request: TokenizeRequest) -> TokenizeResponse:
         response = self.tokenizer(request.text, padding=request.padding)
         return TokenizeResponse(token_ids=response.input_ids, attention_mask=response.attention_mask)
-
-
-def get_downloaded_model_path(model_name: str):
-    f = partial(
-        snapshot_download,
-        repo_id=model_name,
-        local_files_only=is_offline_mode(),
-        cache_dir=os.getenv("TRANSFORMERS_CACHE", None),
-        # maybe move to safetensors in the future
-        ignore_patterns=["*.safetensors", "*.msgpack", "*.h5", "*log*", "*evaluation*", "tensorboard"],
-    )
-    # download only on 1 process
-    run_rank_n(f, barrier=True)
-    # now since the snapshot is downloaded, pass the model_path to all processes
-    return f()
 
 
 def check_max_input_length(input_token_length: int, max_input_length: int) -> None:
@@ -118,10 +113,9 @@ def get_hf_model_class(model_class: str) -> Union[AutoModelForCausalLM, AutoMode
 
 
 def load_tokenizer(model_name: str) -> AutoTokenizer:
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    tokenizer = AutoTokenizer.from_pretrained(model_name, padding_side="left")
 
     if tokenizer.pad_token_id is None:
         tokenizer.add_special_tokens({"pad_token": "[PAD]"})
 
-    tokenizer.padding_side = "left"
     return tokenizer

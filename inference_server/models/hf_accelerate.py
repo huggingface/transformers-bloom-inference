@@ -2,10 +2,8 @@ from argparse import Namespace
 
 import torch
 
-from transformers import AutoModelForCausalLM, AutoTokenizer
-
 from ..utils import print_rank_n
-from .model import Model, get_downloaded_model_path, get_hf_model_class, load_tokenizer
+from .model import Model, get_hf_model_class
 
 
 class HFAccelerateModel(Model):
@@ -14,12 +12,7 @@ class HFAccelerateModel(Model):
 
         super().__init__(args)
 
-        downloaded_model_path = get_downloaded_model_path(args.model_name)
-
-        self.tokenizer = load_tokenizer(downloaded_model_path)
-        self.pad = self.tokenizer.pad_token_id
-
-        kwargs = {"pretrained_model_name_or_path": downloaded_model_path, "device_map": "auto"}
+        kwargs = {"pretrained_model_name_or_path": args.model_name, "device_map": "auto"}
 
         if len(args.cuda_visible_devices) > 1:
             kwargs["device_map"] = "balanced_low_0"
@@ -39,3 +32,5 @@ class HFAccelerateModel(Model):
         self.input_device = "cuda:0"
 
         print_rank_n("Model loaded")
+
+        self.post_init(args.model_name)
