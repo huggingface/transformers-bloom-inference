@@ -1,4 +1,3 @@
-from .generation_utils import GenerationMixin
 from .requests import (
     GenerateRequest,
     GenerateResponse,

@@ -3,7 +3,7 @@ import argparse
 import requests
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.routing import APIRoute, Mount
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -48,9 +48,9 @@ class Server:
     def homepage(self, request: Request) -> HTMLResponse:
         return self.templates.TemplateResponse("index.html", {"request": request})
 
-    def generate(self, request: dict) -> str:
+    def generate(self, request: dict) -> JSONResponse:
         response = requests.post(f"http://{self.server_host}:{self.server_port}/generate", json=request, verify=False)
-        return response.json()
+        return JSONResponse(content=response.json())
 
     def run(self):
         # get around CORS

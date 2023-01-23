@@ -11,7 +11,7 @@ from typing import Any, List, Tuple, Union
 import torch
 import torch.distributed as dist
 
-from ..constants import DS_INFERENCE, DS_INFERENCE_BLOOM_FP16, DS_INFERENCE_BLOOM_INT8, DS_ZERO, HF_ACCELERATE
+from ..constants import DS_INFERENCE, DS_ZERO, HF_ACCELERATE
 
 
 # used for benchmarks
@@ -67,7 +67,6 @@ def parse_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
 
     args.dtype = get_torch_dtype(args.dtype)
     args.generate_kwargs = json.loads(args.generate_kwargs)
-    args.use_pre_sharded_checkpoints = args.model_name in [DS_INFERENCE_BLOOM_FP16, DS_INFERENCE_BLOOM_INT8]
 
     return args
 

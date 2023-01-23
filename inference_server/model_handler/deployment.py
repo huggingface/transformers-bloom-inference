@@ -9,11 +9,9 @@ import time
 from typing import List
 
 import grpc
-from mii.server_client import MIIServerClient
-from transformers import AutoTokenizer
 
 from ..constants import DS_INFERENCE, DS_ZERO
-from ..models import get_downloaded_model_path, get_model_class, load_tokenizer
+from ..models import get_model_class, load_tokenizer
 from ..utils import (
     GenerateResponse,
     TokenizeRequest,
@@ -25,14 +23,14 @@ from ..utils import (
 from .grpc_utils.pb import generation_pb2, generation_pb2_grpc
 
 
-class ModelDeployment(MIIServerClient):
+class ModelDeployment:
     def __init__(self, args: argparse.Namespace, use_grpc_server: bool = False, cuda_visible_devices: List[int] = [0]):
         self.cuda_visible_devices = cuda_visible_devices
         self.num_gpus = len(self.cuda_visible_devices)
         self.use_grpc_server = use_grpc_server
 
         if self.use_grpc_server:
-            self.tokenizer = load_tokenizer(get_downloaded_model_path(args.model_name))
+            self.tokenizer = load_tokenizer(args.model_name)
 
             self.initialize_ports()
 
@@ -56,6 +54,27 @@ class ModelDeployment(MIIServerClient):
         self.ports = []
         for i in range(self.num_gpus):
             self.ports.append(50950 + self.cuda_visible_devices[i])
+
+    def _is_socket_open(self, port):
+        import socket
+
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        result = sock.connect_ex(("0.0.0.0", port))
+        sock.close()
+        return result == 0
+
+    def _is_server_process_alive(self):
+        if self.process is None:
+            return True
+        try:
+            self.process.wait(1)
+        except subprocess.TimeoutExpired as err:
+            # timeout means we're still running and all (probably) okay
+            is_alive = True
+        else:
+            # no exception case
+            is_alive = False
+        return is_alive
 
     def _wait_until_server_is_live(self):
         sockets_open = False

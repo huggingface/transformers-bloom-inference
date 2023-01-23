@@ -1,6 +1,4 @@
 gen-proto:
-	pip install grpcio-tools==1.50.0 --no-cache-dir
-
 	mkdir -p inference_server/model_handler/grpc_utils/pb
 
 	python -m grpc_tools.protoc -Iinference_server/model_handler/grpc_utils/proto --python_out=inference_server/model_handler/grpc_utils/pb --grpc_python_out=inference_server/model_handler/grpc_utils/pb inference_server/model_handler/grpc_utils/proto/generation.proto
@@ -100,3 +98,6 @@ codegen-mono:
 	MAX_BATCH_SIZE=4 \
 	CUDA_VISIBLE_DEVICES=0 \
 	gunicorn -t 0 -w 1 -b 127.0.0.1:5000 inference_server.server:app --access-logfile - --access-logformat '%(h)s %(t)s "%(r)s" %(s)s %(b)s'
+
+ui:
+	python -m ui &

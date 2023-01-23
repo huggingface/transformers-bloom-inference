@@ -9,10 +9,11 @@ import torch
 import torch.distributed as dist
 
 import deepspeed
-from transformers import AutoConfig, AutoTokenizer
+from huggingface_hub import try_to_load_from_cache
+from transformers import AutoConfig
 
 from ..utils import print_rank_n, run_rank_n
-from .model import Model, get_downloaded_model_path, get_hf_model_class, load_tokenizer
+from .model import Model, get_hf_model_class
 
 
 # basic DeepSpeed inference model class for benchmarking
@@ -24,26 +25,23 @@ class DSInferenceModel(Model):
 
         world_size = int(os.getenv("WORLD_SIZE", "1"))
 
-        downloaded_model_path = get_downloaded_model_path(args.model_name)
-
-        self.tokenizer = load_tokenizer(downloaded_model_path)
-        self.pad = self.tokenizer.pad_token_id
-
         # create dummy tensors for allocating space which will be filled with
         # the actual weights while calling deepspeed.init_inference in the
         # following code
         with deepspeed.OnDevice(dtype=torch.float16, device="meta"):
             self.model = get_hf_model_class(args.model_class).from_config(
-                AutoConfig.from_pretrained(downloaded_model_path), torch_dtype=torch.bfloat16
+                AutoConfig.from_pretrained(args.model_name), torch_dtype=torch.bfloat16
             )
         self.model = self.model.eval()
+
+        downloaded_model_path = get_model_path(args.model_name)
 
         if args.dtype in [torch.float16, torch.int8]:
             # We currently support the weights provided by microsoft (which are
             # pre-sharded)
-            if args.use_pre_sharded_checkpoints:
-                checkpoints_json = os.path.join(downloaded_model_path, "ds_inference_config.json")
+            checkpoints_json = os.path.join(downloaded_model_path, "ds_inference_config.json")
 
+            if os.path.isfile(checkpoints_json):
                 self.model = deepspeed.init_inference(
                     self.model,
                     mp_size=world_size,
@@ -60,6 +58,7 @@ class DSInferenceModel(Model):
                     self.model = deepspeed.init_inference(
                         self.model,
                         mp_size=world_size,
+                        base_dir=downloaded_model_path,
                         dtype=args.dtype,
                         checkpoint=checkpoints_json,
                         replace_with_kernel_inject=True,
@@ -73,6 +72,8 @@ class DSInferenceModel(Model):
 
         print_rank_n("Model loaded")
         dist.barrier()
+
+        self.post_init(args.model_name)
 
 
 class TemporaryCheckpointsJSON:
@@ -93,3 +94,16 @@ class TemporaryCheckpointsJSON:
 
     def __exit__(self, type, value, traceback):
         return
+
+
+def get_model_path(model_name: str):
+    config_file = "config.json"
+
+    # will fall back to HUGGINGFACE_HUB_CACHE
+    config_path = try_to_load_from_cache(model_name, config_file, cache_dir=os.getenv("TRANSFORMERS_CACHE"))
+
+    if config_path is not None:
+        return os.path.dirname(config_path)
+    # treat the model name as an explicit model path
+    elif os.path.isfile(os.path.join(model_name, config_file)):
+        return model_name
