@@ -61,6 +61,17 @@ class TokenizeResponse(BaseResponse):
     method: str = "tokenize"
 
 
+class ForwardRequest(BaseModel):
+    conditioning_text: List[str] = None
+    response: List[str] = None
+    method: str = "forward"
+
+
+class ForwardResponse(BaseResponse):
+    nll: float = None
+    method: str = "forward"
+
+
 def parse_bool(value: str) -> bool:
     if value.lower() == "true":
         return True

@@ -19,12 +19,23 @@ class GenerationServiceStub(object):
             request_serializer=generation__pb2.GenerationRequestProto.SerializeToString,
             response_deserializer=generation__pb2.GenerationResponseProto.FromString,
         )
+        self.Forward = channel.unary_unary(
+            "/generation.GenerationService/Forward",
+            request_serializer=generation__pb2.ForwardRequestProto.SerializeToString,
+            response_deserializer=generation__pb2.ForwardResponseProto.FromString,
+        )
 
 
 class GenerationServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def Generate(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details("Method not implemented!")
+        raise NotImplementedError("Method not implemented!")
+
+    def Forward(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details("Method not implemented!")
@@ -37,6 +48,11 @@ def add_GenerationServiceServicer_to_server(servicer, server):
             servicer.Generate,
             request_deserializer=generation__pb2.GenerationRequestProto.FromString,
             response_serializer=generation__pb2.GenerationResponseProto.SerializeToString,
+        ),
+        "Forward": grpc.unary_unary_rpc_method_handler(
+            servicer.Forward,
+            request_deserializer=generation__pb2.ForwardRequestProto.FromString,
+            response_serializer=generation__pb2.ForwardResponseProto.SerializeToString,
         ),
     }
     generic_handler = grpc.method_handlers_generic_handler("generation.GenerationService", rpc_method_handlers)
@@ -66,6 +82,35 @@ class GenerationService(object):
             "/generation.GenerationService/Generate",
             generation__pb2.GenerationRequestProto.SerializeToString,
             generation__pb2.GenerationResponseProto.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+        )
+
+    @staticmethod
+    def Forward(
+        request,
+        target,
+        options=(),
+        channel_credentials=None,
+        call_credentials=None,
+        insecure=False,
+        compression=None,
+        wait_for_ready=None,
+        timeout=None,
+        metadata=None,
+    ):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            "/generation.GenerationService/Forward",
+            generation__pb2.ForwardRequestProto.SerializeToString,
+            generation__pb2.ForwardResponseProto.FromString,
             options,
             channel_credentials,
             insecure,

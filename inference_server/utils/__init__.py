@@ -1,4 +1,6 @@
 from .requests import (
+    ForwardRequest,
+    ForwardResponse,
     GenerateRequest,
     GenerateResponse,
     TokenizeRequest,

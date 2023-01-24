@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(
-    b'\n\x10generation.proto\x12\ngeneration"_\n\x05Value\x12\x10\n\x06svalue\x18\x01 \x01(\tH\x00\x12\x10\n\x06ivalue\x18\x02 \x01(\x03H\x00\x12\x10\n\x06\x66value\x18\x03 \x01(\x02H\x00\x12\x10\n\x06\x62value\x18\x04 \x01(\x08H\x00\x42\x0e\n\x0coneof_values"\xc2\x01\n\x16GenerationRequestProto\x12\r\n\x05texts\x18\x01 \x03(\t\x12O\n\x0fgenerate_kwargs\x18\x02 \x03(\x0b\x32\x36.generation.GenerationRequestProto.GenerateKwargsEntry\x1aH\n\x13GenerateKwargsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.generation.Value:\x02\x38\x01"U\n\x17GenerationResponseProto\x12\r\n\x05texts\x18\x01 \x03(\t\x12\x1c\n\x14num_generated_tokens\x18\x02 \x03(\x05\x12\r\n\x05\x65rror\x18\x03 \x01(\t2j\n\x11GenerationService\x12U\n\x08Generate\x12".generation.GenerationRequestProto\x1a#.generation.GenerationResponseProto"\x00\x62\x06proto3'
+    b'\n\x10generation.proto\x12\ngeneration"_\n\x05Value\x12\x10\n\x06svalue\x18\x01 \x01(\tH\x00\x12\x10\n\x06ivalue\x18\x02 \x01(\x03H\x00\x12\x10\n\x06\x66value\x18\x03 \x01(\x02H\x00\x12\x10\n\x06\x62value\x18\x04 \x01(\x08H\x00\x42\x0e\n\x0coneof_values"\xc2\x01\n\x16GenerationRequestProto\x12\r\n\x05texts\x18\x01 \x03(\t\x12O\n\x0fgenerate_kwargs\x18\x02 \x03(\x0b\x32\x36.generation.GenerationRequestProto.GenerateKwargsEntry\x1aH\n\x13GenerateKwargsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.generation.Value:\x02\x38\x01"U\n\x17GenerationResponseProto\x12\r\n\x05texts\x18\x01 \x03(\t\x12\x1c\n\x14num_generated_tokens\x18\x02 \x03(\x05\x12\r\n\x05\x65rror\x18\x03 \x01(\t"B\n\x13\x46orwardRequestProto\x12\x19\n\x11\x63onditioning_text\x18\x01 \x03(\t\x12\x10\n\x08response\x18\x02 \x03(\t"#\n\x14\x46orwardResponseProto\x12\x0b\n\x03nll\x18\x01 \x01(\x02\x32\xba\x01\n\x11GenerationService\x12U\n\x08Generate\x12".generation.GenerationRequestProto\x1a#.generation.GenerationResponseProto"\x00\x12N\n\x07\x46orward\x12\x1f.generation.ForwardRequestProto\x1a .generation.ForwardResponseProto"\x00\x62\x06proto3'
 )
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
@@ -32,6 +32,10 @@ if _descriptor._USE_C_DESCRIPTORS == False:
     _GENERATIONREQUESTPROTO_GENERATEKWARGSENTRY._serialized_end = 324
     _GENERATIONRESPONSEPROTO._serialized_start = 326
     _GENERATIONRESPONSEPROTO._serialized_end = 411
-    _GENERATIONSERVICE._serialized_start = 413
-    _GENERATIONSERVICE._serialized_end = 519
+    _FORWARDREQUESTPROTO._serialized_start = 413
+    _FORWARDREQUESTPROTO._serialized_end = 479
+    _FORWARDRESPONSEPROTO._serialized_start = 481
+    _FORWARDRESPONSEPROTO._serialized_end = 516
+    _GENERATIONSERVICE._serialized_start = 519
+    _GENERATIONSERVICE._serialized_end = 705
 # @@protoc_insertion_point(module_scope)
