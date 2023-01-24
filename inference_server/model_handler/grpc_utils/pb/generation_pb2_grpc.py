@@ -16,8 +16,8 @@ class GenerationServiceStub(object):
         """
         self.Generate = channel.unary_unary(
             "/generation.GenerationService/Generate",
-            request_serializer=generation__pb2.GenerationRequest.SerializeToString,
-            response_deserializer=generation__pb2.GenerationResponse.FromString,
+            request_serializer=generation__pb2.GenerationRequestProto.SerializeToString,
+            response_deserializer=generation__pb2.GenerationResponseProto.FromString,
         )
 
 
@@ -35,8 +35,8 @@ def add_GenerationServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
         "Generate": grpc.unary_unary_rpc_method_handler(
             servicer.Generate,
-            request_deserializer=generation__pb2.GenerationRequest.FromString,
-            response_serializer=generation__pb2.GenerationResponse.SerializeToString,
+            request_deserializer=generation__pb2.GenerationRequestProto.FromString,
+            response_serializer=generation__pb2.GenerationResponseProto.SerializeToString,
         ),
     }
     generic_handler = grpc.method_handlers_generic_handler("generation.GenerationService", rpc_method_handlers)
@@ -64,8 +64,8 @@ class GenerationService(object):
             request,
             target,
             "/generation.GenerationService/Generate",
-            generation__pb2.GenerationRequest.SerializeToString,
-            generation__pb2.GenerationResponse.FromString,
+            generation__pb2.GenerationRequestProto.SerializeToString,
+            generation__pb2.GenerationResponseProto.FromString,
             options,
             channel_credentials,
             insecure,

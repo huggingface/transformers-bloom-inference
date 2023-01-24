@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(
-    b'\n\x10generation.proto\x12\ngeneration"_\n\x05Value\x12\x10\n\x06svalue\x18\x01 \x01(\tH\x00\x12\x10\n\x06ivalue\x18\x02 \x01(\x03H\x00\x12\x10\n\x06\x66value\x18\x03 \x01(\x02H\x00\x12\x10\n\x06\x62value\x18\x04 \x01(\x08H\x00\x42\x0e\n\x0coneof_values"\xb8\x01\n\x11GenerationRequest\x12\r\n\x05texts\x18\x01 \x03(\t\x12J\n\x0fgenerate_kwargs\x18\x02 \x03(\x0b\x32\x31.generation.GenerationRequest.GenerateKwargsEntry\x1aH\n\x13GenerateKwargsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.generation.Value:\x02\x38\x01"P\n\x12GenerationResponse\x12\r\n\x05texts\x18\x01 \x03(\t\x12\x1c\n\x14num_generated_tokens\x18\x02 \x03(\x05\x12\r\n\x05\x65rror\x18\x03 \x01(\t2`\n\x11GenerationService\x12K\n\x08Generate\x12\x1d.generation.GenerationRequest\x1a\x1e.generation.GenerationResponse"\x00\x62\x06proto3'
+    b'\n\x10generation.proto\x12\ngeneration"_\n\x05Value\x12\x10\n\x06svalue\x18\x01 \x01(\tH\x00\x12\x10\n\x06ivalue\x18\x02 \x01(\x03H\x00\x12\x10\n\x06\x66value\x18\x03 \x01(\x02H\x00\x12\x10\n\x06\x62value\x18\x04 \x01(\x08H\x00\x42\x0e\n\x0coneof_values"\xc2\x01\n\x16GenerationRequestProto\x12\r\n\x05texts\x18\x01 \x03(\t\x12O\n\x0fgenerate_kwargs\x18\x02 \x03(\x0b\x32\x36.generation.GenerationRequestProto.GenerateKwargsEntry\x1aH\n\x13GenerateKwargsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.generation.Value:\x02\x38\x01"U\n\x17GenerationResponseProto\x12\r\n\x05texts\x18\x01 \x03(\t\x12\x1c\n\x14num_generated_tokens\x18\x02 \x03(\x05\x12\r\n\x05\x65rror\x18\x03 \x01(\t2j\n\x11GenerationService\x12U\n\x08Generate\x12".generation.GenerationRequestProto\x1a#.generation.GenerationResponseProto"\x00\x62\x06proto3'
 )
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
@@ -22,16 +22,16 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, "generation_pb2", globals())
 if _descriptor._USE_C_DESCRIPTORS == False:
 
     DESCRIPTOR._options = None
-    _GENERATIONREQUEST_GENERATEKWARGSENTRY._options = None
-    _GENERATIONREQUEST_GENERATEKWARGSENTRY._serialized_options = b"8\001"
+    _GENERATIONREQUESTPROTO_GENERATEKWARGSENTRY._options = None
+    _GENERATIONREQUESTPROTO_GENERATEKWARGSENTRY._serialized_options = b"8\001"
     _VALUE._serialized_start = 32
     _VALUE._serialized_end = 127
-    _GENERATIONREQUEST._serialized_start = 130
-    _GENERATIONREQUEST._serialized_end = 314
-    _GENERATIONREQUEST_GENERATEKWARGSENTRY._serialized_start = 242
-    _GENERATIONREQUEST_GENERATEKWARGSENTRY._serialized_end = 314
-    _GENERATIONRESPONSE._serialized_start = 316
-    _GENERATIONRESPONSE._serialized_end = 396
-    _GENERATIONSERVICE._serialized_start = 398
-    _GENERATIONSERVICE._serialized_end = 494
+    _GENERATIONREQUESTPROTO._serialized_start = 130
+    _GENERATIONREQUESTPROTO._serialized_end = 324
+    _GENERATIONREQUESTPROTO_GENERATEKWARGSENTRY._serialized_start = 252
+    _GENERATIONREQUESTPROTO_GENERATEKWARGSENTRY._serialized_end = 324
+    _GENERATIONRESPONSEPROTO._serialized_start = 326
+    _GENERATIONRESPONSEPROTO._serialized_end = 411
+    _GENERATIONSERVICE._serialized_start = 413
+    _GENERATIONSERVICE._serialized_end = 519
 # @@protoc_insertion_point(module_scope)
