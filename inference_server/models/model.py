@@ -1,12 +1,19 @@
 import argparse
-from typing import Union
+from typing import List, Union
 
 import torch
 
 import transformers
 from transformers import AutoModelForCausalLM, AutoModelForSeq2SeqLM, AutoTokenizer
 
-from ..utils import GenerateRequest, GenerateResponse, TokenizeRequest, TokenizeResponse
+from ..utils import (
+    ForwardRequest,
+    ForwardResponse,
+    GenerateRequest,
+    GenerateResponse,
+    TokenizeRequest,
+    TokenizeResponse,
+)
 
 
 class Model:
@@ -83,6 +90,54 @@ class Model:
                 generated_text = self.tokenizer.batch_decode(output_tokens, skip_special_tokens=True)
 
             return GenerateResponse(text=generated_text, num_generated_tokens=num_generated_tokens)
+        except Exception as exception:
+            return exception
+
+    def forward(self, request: ForwardRequest) -> Union[ForwardResponse, Exception]:
+        def prepare_tensors(conditioning_tokens: List[List[int]], response_tokens: List[List[int]]):
+            bs = len(conditioning_tokens)
+
+            input_ids = [conditioning_tokens[i] + response_tokens[i] for i in range(bs)]
+            attention_mask = [[1] * (len(conditioning_tokens[i]) + len(response_tokens[i])) for i in range(bs)]
+            labels = [[-100] * len(conditioning_tokens[i]) + response_tokens[i] for i in range(bs)]
+
+            input_ids = pad(input_ids, self.tokenizer.pad_token_id)
+            attention_mask = pad(attention_mask, 0)
+            labels = pad(labels, -100)
+
+            return {
+                "input_ids": torch.tensor(input_ids),
+                "attention_mask": torch.tensor(attention_mask),
+                "labels": torch.tensor(labels),
+            }
+
+        def pad(arrays: list, padding: int, max_length: int = None):
+            if max_length is None:
+                max_length = max(list(map(len, arrays)))
+
+            arrays = [[padding] * (max_length - len(array)) + array for array in arrays]
+            return arrays
+
+        try:
+            batch_size = len(request.conditioning_text)
+
+            check_batch_size(batch_size, self.max_batch_size)
+
+            conditioning_tokens = self.tokenizer(request.conditioning_text)["input_ids"]
+            response_tokens = self.tokenizer(request.response)["input_ids"]
+
+            max_length_in_batch = max([len(conditioning_tokens) + len(response_tokens)])
+            check_max_input_length(max_length_in_batch, self.max_input_length)
+
+            input_tokens = prepare_tensors(conditioning_tokens, response_tokens)
+
+            for t in input_tokens:
+                if torch.is_tensor(input_tokens[t]):
+                    input_tokens[t] = input_tokens[t].to(self.input_device)
+
+            loss = self.model(**input_tokens).loss
+
+            return ForwardResponse(nll=loss.item())
         except Exception as exception:
             return exception
 

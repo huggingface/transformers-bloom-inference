@@ -2,7 +2,8 @@ syntax = "proto3";
 package generation;
 
 service GenerationService {
-    rpc Generate (GenerationRequest) returns (GenerationResponse) {}
+    rpc Generate (GenerationRequestProto) returns (GenerationResponseProto) {}
+    rpc Forward (ForwardRequestProto) returns (ForwardResponseProto) {}
 }
 
 message Value {
@@ -14,13 +15,23 @@ message Value {
     }
 }
 
-message GenerationRequest {
+message GenerationRequestProto {
     repeated string texts = 1;
     map<string,Value> generate_kwargs = 2;
 }
 
-message GenerationResponse {
+message GenerationResponseProto {
     repeated string texts = 1;
     repeated int32 num_generated_tokens = 2;
     string error = 3;
+}
+
+message ForwardRequestProto {
+    repeated string conditioning_text = 1;
+    repeated string response = 2;
+}
+
+message ForwardResponseProto {
+    float nll = 1;
+    string error = 2;
 }

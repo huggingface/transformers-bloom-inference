@@ -13,6 +13,8 @@ import grpc
 from ..constants import DS_INFERENCE, DS_ZERO
 from ..models import get_model_class, load_tokenizer
 from ..utils import (
+    ForwardRequest,
+    ForwardResponse,
     GenerateResponse,
     TokenizeRequest,
     TokenizeResponse,
@@ -132,17 +134,31 @@ class ModelDeployment:
             self.stubs.append(stub)
 
     # runs task in parallel and return the result from the first task
-    async def _query_in_tensor_parallel(self, text: List[str], generate_kwargs: dict):
+    async def generate_in_tensor_parallel(self, text: List[str], generate_kwargs: dict):
         responses = []
         for i in range(self.num_gpus):
-            responses.append(self.asyncio_loop.create_task(self._request_async_response(i, text, generate_kwargs)))
+            responses.append(self.asyncio_loop.create_task(self.generate_async(i, text, generate_kwargs)))
 
         await responses[0]
         return responses[0]
 
-    async def _request_async_response(self, stub_id: int, text: List[str], generate_kwargs: dict):
-        req = generation_pb2.GenerationRequest(texts=text, generate_kwargs=generate_kwargs)
+    async def generate_async(self, stub_id: int, text: List[str], generate_kwargs: dict):
+        req = generation_pb2.GenerationRequestProto(texts=text, generate_kwargs=generate_kwargs)
         response = await self.stubs[stub_id].Generate(req)
+        return response
+
+    # runs task in parallel and return the result from the first task
+    async def forward_in_tensor_parallel(self, conditioning_text: List[str], response: List[str]):
+        responses = []
+        for i in range(self.num_gpus):
+            responses.append(self.asyncio_loop.create_task(self.forward_async(i, conditioning_text, response)))
+
+        await responses[0]
+        return responses[0]
+
+    async def forward_async(self, stub_id: int, conditioning_text: List[str], response: List[str]):
+        req = generation_pb2.ForwardRequestProto(conditioning_text=conditioning_text, response=response)
+        response = await self.stubs[stub_id].Forward(req)
         return response
 
     def generate(self, **kwargs) -> GenerateResponse:
@@ -157,7 +173,7 @@ class ModelDeployment:
             generate_kwargs = self.dict_to_proto(generate_kwargs)
 
             response = self.asyncio_loop.run_until_complete(
-                self._query_in_tensor_parallel(text, generate_kwargs)
+                self.generate_in_tensor_parallel(text, generate_kwargs)
             ).result()
 
             if response.error:
@@ -173,6 +189,24 @@ class ModelDeployment:
                 request = create_generate_request(**kwargs)
 
             response = self.model.generate(request)
+
+            if isinstance(response, Exception):
+                raise response
+            else:
+                return response
+
+    def forward(self, request: ForwardRequest) -> ForwardResponse:
+        if self.use_grpc_server:
+            response = self.asyncio_loop.run_until_complete(
+                self.forward_in_tensor_parallel(request.conditioning_text, request.response)
+            ).result()
+
+            if response.error:
+                raise Exception(response.error)
+            else:
+                return ForwardResponse(nll=response.nll)
+        else:
+            response = self.model.forward(request)
 
             if isinstance(response, Exception):
                 raise response

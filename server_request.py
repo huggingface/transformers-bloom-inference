@@ -37,6 +37,27 @@ def tokenize(url: str) -> None:
     print(response.json(), "\n")
 
 
+def forward(url: str) -> None:
+    url = url + "/forward/"
+
+    request_body = {
+        "conditioning_text": [
+            "DeepSpeed",
+            "DeepSpeed is a",
+            "DeepSpeed is a machine",
+            "DeepSpeed is a machine learning framework",
+        ],
+        "response": [
+            "DeepSpeed",
+            "DeepSpeed is a",
+            "DeepSpeed is a machine",
+            "DeepSpeed is a machine learning framework",
+        ],
+    }
+    response = requests.post(url=url, json=request_body, verify=False)
+    print(response.json(), "\n")
+
+
 def query_id(url: str) -> None:
     url = url + "/query_id/"
 
@@ -50,6 +71,7 @@ def main():
 
     generate(url)
     tokenize(url)
+    forward(url)
     query_id(url)
 
 

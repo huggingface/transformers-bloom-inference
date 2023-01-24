@@ -7,7 +7,7 @@ import grpc
 
 # from ...constants import GRPC_MAX_MSG_SIZE
 from ...models import Model
-from ...utils import create_generate_request, print_rank_n
+from ...utils import ForwardRequest, create_generate_request, print_rank_n
 from .pb import generation_pb2, generation_pb2_grpc
 
 
@@ -33,11 +33,31 @@ class GenerationServer(generation_pb2_grpc.GenerationServiceServicer):
 
         if isinstance(response, Exception):
             # if exception occurs, we don't this subprocess to crash
-            response = generation_pb2.GenerationResponse(error=str(response))
+            response = generation_pb2.GenerationResponseProto(error=str(response))
         else:
-            response = generation_pb2.GenerationResponse(
+            response = generation_pb2.GenerationResponseProto(
                 texts=response.text, num_generated_tokens=response.num_generated_tokens
             )
+
+        return response
+
+    def Forward(self, request, context):
+        conditioning_text = [r for r in request.conditioning_text]
+        response = [r for r in request.response]
+
+        request = ForwardRequest(conditioning_text=conditioning_text, response=response)
+
+        local_rank = int(os.getenv("LOCAL_RANK", "0"))
+        torch.cuda.set_device(local_rank)
+        self.model.input_device = local_rank
+
+        response = self.model.forward(request)
+
+        if isinstance(response, Exception):
+            # if exception occurs, we don't this subprocess to crash
+            response = generation_pb2.ForwardResponseProto(error=str(response))
+        else:
+            response = generation_pb2.ForwardResponseProto(nll=response.nll)
 
         return response
 

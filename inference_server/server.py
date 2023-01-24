@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from .constants import DS_INFERENCE, DS_ZERO, HF_ACCELERATE
 from .model_handler.deployment import ModelDeployment
 from .utils import (
+    ForwardRequest,
     GenerateRequest,
     TokenizeRequest,
     get_exception_response,
@@ -21,6 +22,7 @@ from .utils import (
 class QueryID(BaseModel):
     generate_query_id: int = 0
     tokenize_query_id: int = 0
+    forward_query_id: int = 0
 
 
 # placeholder class for getting args. gunicorn does not allow passing args to a
@@ -91,4 +93,26 @@ def generate():
     except Exception:
         response = get_exception_response(query_ids.generate_query_id, x.method, args.debug)
         query_ids.generate_query_id += 1
+        return response, status.HTTP_500_INTERNAL_SERVER_ERROR
+
+
+@app.route("/forward/", methods=["POST"])
+def forward():
+    try:
+        x = request.get_json()
+        x = ForwardRequest(**x)
+
+        if len(x.conditioning_text) != len(x.response):
+            raise Exception("unequal number of elements in conditioning_text and response arguments")
+
+        response, total_time_taken = run_and_log_time(partial(model.forward, request=x))
+
+        response.query_id = query_ids.forward_query_id
+        query_ids.forward_query_id += 1
+        response.total_time_taken = "{:.2f} secs".format(total_time_taken)
+
+        return response.dict(), status.HTTP_200_OK
+    except Exception:
+        response = get_exception_response(query_ids.forward_query_id, x.method, args.debug)
+        query_ids.forward_query_id += 1
         return response, status.HTTP_500_INTERNAL_SERVER_ERROR
