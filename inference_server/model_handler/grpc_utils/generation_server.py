@@ -33,9 +33,9 @@ class GenerationServer(generation_pb2_grpc.GenerationServiceServicer):
 
         if isinstance(response, Exception):
             # if exception occurs, we don't this subprocess to crash
-            response = generation_pb2.GenerationResponse(error=str(response))
+            response = generation_pb2.GenerationResponseProto(error=str(response))
         else:
-            response = generation_pb2.GenerationResponse(
+            response = generation_pb2.GenerationResponseProto(
                 texts=response.text, num_generated_tokens=response.num_generated_tokens
             )
 
@@ -55,9 +55,9 @@ class GenerationServer(generation_pb2_grpc.GenerationServiceServicer):
 
         if isinstance(response, Exception):
             # if exception occurs, we don't this subprocess to crash
-            response = generation_pb2.ForwardResponse(error=str(response))
+            response = generation_pb2.ForwardResponseProto(error=str(response))
         else:
-            response = generation_pb2.ForwardResponse(nll=response.nll)
+            response = generation_pb2.ForwardResponseProto(nll=response.nll)
 
         return response
 
