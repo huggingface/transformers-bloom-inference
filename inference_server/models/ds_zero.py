@@ -14,8 +14,6 @@ from .model import Model, get_hf_model_class
 
 class DSZeROModel(Model):
     def __init__(self, args: Namespace) -> None:
-        print_rank_n("Loading model...")
-
         super().__init__(args)
 
         config = AutoConfig.from_pretrained(args.model_name)
@@ -59,8 +57,5 @@ class DSZeROModel(Model):
         # this is the CUDA device for the current process. This will be used
         # later to identify the GPU on which to transfer tensors
         self.input_device = torch.cuda.current_device()
-
-        print_rank_n("Model loaded")
-        dist.barrier()
 
         self.post_init(args.model_name)

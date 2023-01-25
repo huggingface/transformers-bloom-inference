@@ -19,8 +19,6 @@ from .model import Model, get_hf_model_class
 # basic DeepSpeed inference model class for benchmarking
 class DSInferenceModel(Model):
     def __init__(self, args: Namespace) -> None:
-        print_rank_n("Loading model...")
-
         super().__init__(args)
 
         # create dummy tensors for allocating space which will be filled with
@@ -67,9 +65,6 @@ class DSInferenceModel(Model):
 
         self.model = self.model.module
         self.input_device = torch.cuda.current_device()
-
-        print_rank_n("Model loaded")
-        dist.barrier()
 
         self.post_init(args.model_name)
 

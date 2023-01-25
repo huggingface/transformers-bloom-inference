@@ -53,6 +53,8 @@ class ModelDeployment:
         else:
             self.model = get_model_class(args.deployment_framework)(args)
 
+        print_rank_n("model loaded")
+
     def should_use_grpc(self, deployment_framework: str, grpc_allowed: bool) -> bool:
         if grpc_allowed and get_world_size() > 1:
             return deployment_framework in [DS_INFERENCE, DS_ZERO]
