@@ -186,7 +186,11 @@ def get_exception_response(query_id: int, method: str, debug: bool = False):
 def get_world_size() -> int:
     if dist.is_initialized():
         return dist.get_world_size()
-    return 0
+    else:
+        cuda_visible_devices = get_cuda_visible_devices()
+        if cuda_visible_devices is None:
+            return 0
+        return len(cuda_visible_devices)
 
 
 def get_cuda_visible_devices() -> List[int]:
