@@ -29,6 +29,7 @@ from .grpc_utils.pb import generation_pb2, generation_pb2_grpc
 class ModelDeployment:
     def __init__(self, args: argparse.Namespace, grpc_allowed: bool = False):
         self.cuda_visible_devices = get_cuda_visible_devices()
+        self.num_gpus = get_world_size()
 
         self.use_grpc_server = self.should_use_grpc(args.deployment_framework, grpc_allowed)
 
