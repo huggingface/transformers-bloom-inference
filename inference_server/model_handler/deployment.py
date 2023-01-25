@@ -3,7 +3,6 @@ Copyright 2022 The Microsoft DeepSpeed Team
 """
 import argparse
 import asyncio
-import os
 import subprocess
 import time
 from typing import List
@@ -19,17 +18,19 @@ from ..utils import (
     TokenizeRequest,
     TokenizeResponse,
     create_generate_request,
+    get_cuda_visible_devices,
     get_str_dtype,
+    get_world_size,
     print_rank_n,
 )
 from .grpc_utils.pb import generation_pb2, generation_pb2_grpc
 
 
 class ModelDeployment:
-    def __init__(self, args: argparse.Namespace, use_grpc_server: bool = False, cuda_visible_devices: List[int] = [0]):
-        self.cuda_visible_devices = cuda_visible_devices
-        self.num_gpus = len(self.cuda_visible_devices)
-        self.use_grpc_server = use_grpc_server
+    def __init__(self, args: argparse.Namespace, grpc_allowed: bool = False):
+        self.cuda_visible_devices = get_cuda_visible_devices()
+
+        self.use_grpc_server = self.should_use_grpc(args.deployment_framework, grpc_allowed)
 
         if self.use_grpc_server:
             self.tokenizer = load_tokenizer(args.model_name)
@@ -49,8 +50,12 @@ class ModelDeployment:
             self.asyncio_loop = asyncio.get_event_loop()
             self._initialize_grpc_client()
         else:
-            os.environ["CUDA_VISIBLE_DEVICES"] = ",".join(map(str, args.cuda_visible_devices))
             self.model = get_model_class(args.deployment_framework)(args)
+
+    def should_use_grpc(self, deployment_framework: str, grpc_allowed: bool) -> bool:
+        if grpc_allowed and get_world_size() > 1:
+            return deployment_framework in [DS_INFERENCE, DS_ZERO]
+        return False
 
     def initialize_ports(self):
         self.ports = []

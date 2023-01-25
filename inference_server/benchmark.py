@@ -1,6 +1,5 @@
 import argparse
 import gc
-import os
 from functools import partial
 
 import torch
@@ -13,6 +12,7 @@ from .utils import (
     create_generate_request,
     get_argument_parser,
     get_dummy_batch,
+    get_world_size,
     parse_args,
     print_rank_n,
     run_and_log_time,
@@ -44,10 +44,8 @@ Model loading time + generation time per batch = {initialization_time + latency:
 """
 
 
-def benchmark_end_to_end(args: argparse.Namespace, zero_activated: bool = False) -> None:
-    model, initialization_time = run_and_log_time(
-        partial(ModelDeployment, args=args, use_grpc_server=False, cuda_visible_devices=args.cuda_visible_devices)
-    )
+def benchmark_end_to_end(args: argparse.Namespace) -> None:
+    model, initialization_time = run_and_log_time(partial(ModelDeployment, args=args, grpc_allowed=False))
 
     request = create_generate_request(get_dummy_batch(args.batch_size), args.generate_kwargs)
 
@@ -77,9 +75,8 @@ def benchmark_end_to_end(args: argparse.Namespace, zero_activated: bool = False)
         )
 
         # with ZeRO every GPU is generating batch_size * sequence_length tokens
-        if zero_activated:
-            world_size = int(os.getenv("WORLD_SIZE", "1"))
-            total_new_tokens_generated *= world_size
+        if args.deployment_framework == DS_ZERO:
+            total_new_tokens_generated *= get_world_size()
 
         print_rank_n(
             get_benchmark_results(
@@ -115,7 +112,7 @@ def get_args() -> argparse.Namespace:
 def main() -> None:
     args = get_args()
     start_inference_engine(args.deployment_framework)
-    benchmark_end_to_end(args, args.deployment_framework == DS_ZERO)
+    benchmark_end_to_end(args)
 
 
 if __name__ == "__main__":
