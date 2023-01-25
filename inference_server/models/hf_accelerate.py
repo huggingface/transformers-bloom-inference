@@ -2,19 +2,17 @@ from argparse import Namespace
 
 import torch
 
-from ..utils import print_rank_n
+from ..utils import get_world_size, print_rank_n
 from .model import Model, get_hf_model_class
 
 
 class HFAccelerateModel(Model):
     def __init__(self, args: Namespace) -> None:
-        print_rank_n("Loading model...")
-
         super().__init__(args)
 
         kwargs = {"pretrained_model_name_or_path": args.model_name, "device_map": "auto"}
 
-        if len(args.cuda_visible_devices) > 1:
+        if get_world_size() > 1:
             kwargs["device_map"] = "balanced_low_0"
 
         if args.dtype == torch.int8:
@@ -30,7 +28,5 @@ class HFAccelerateModel(Model):
         self.model.requires_grad_(False)
         self.model.eval()
         self.input_device = "cuda:0"
-
-        print_rank_n("Model loaded")
 
         self.post_init(args.model_name)

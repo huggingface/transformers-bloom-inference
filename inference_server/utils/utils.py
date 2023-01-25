@@ -2,6 +2,7 @@ import argparse
 import copy
 import json
 import math
+import os
 import sys
 import time
 import traceback
@@ -11,7 +12,7 @@ from typing import Any, List, Tuple, Union
 import torch
 import torch.distributed as dist
 
-from ..constants import DS_INFERENCE, DS_ZERO, HF_ACCELERATE
+from ..constants import DS_INFERENCE, DS_ZERO, HF_ACCELERATE, HF_CPU
 
 
 # used for benchmarks
@@ -32,7 +33,10 @@ def get_argument_parser() -> argparse.ArgumentParser:
 
     group = parser.add_argument_group(title="model")
     group.add_argument(
-        "--deployment_framework", type=str, choices=[HF_ACCELERATE, DS_INFERENCE, DS_ZERO], default=HF_ACCELERATE
+        "--deployment_framework",
+        type=str,
+        choices=[HF_ACCELERATE, DS_INFERENCE, DS_ZERO, HF_CPU],
+        default=HF_ACCELERATE,
     )
     group.add_argument(
         "--model_name",
@@ -46,7 +50,9 @@ def get_argument_parser() -> argparse.ArgumentParser:
         required=True,
         help="model class to use",
     )
-    group.add_argument("--dtype", type=str, required=True, choices=["bf16", "fp16", "int8"], help="dtype for model")
+    group.add_argument(
+        "--dtype", type=str, required=True, choices=["bf16", "fp16", "int8", "fp32"], help="dtype for model"
+    )
     group.add_argument(
         "--generate_kwargs",
         type=str,
@@ -55,9 +61,6 @@ def get_argument_parser() -> argparse.ArgumentParser:
     )
     group.add_argument("--max_input_length", type=int, help="max input length")
     group.add_argument("--max_batch_size", type=int, help="max supported batch size")
-    group.add_argument(
-        "--cuda_visible_devices", nargs="*", type=int, default=list(range(8)), help="number of GPUs to use"
-    )
 
     return parser
 
@@ -103,6 +106,8 @@ def get_torch_dtype(dtype_str: str) -> torch.dtype:
         return torch.float16
     elif dtype_str == "int8":
         return torch.int8
+    elif dtype_str == "fp32":
+        return torch.float32
 
 
 def get_str_dtype(dtype_str: torch.dtype) -> str:
@@ -112,6 +117,8 @@ def get_str_dtype(dtype_str: torch.dtype) -> str:
         return "fp16"
     elif dtype_str == torch.int8:
         return "int8"
+    elif dtype_str == torch.float32:
+        return "fp32"
 
 
 def get_dummy_batch(batch_size: int, input_sentences: List[str] = None) -> List[str]:
@@ -174,3 +181,20 @@ def get_exception_response(query_id: int, method: str, debug: bool = False):
         response["stack_trace"] = stack_trace
 
     return response
+
+
+def get_world_size() -> int:
+    if dist.is_initialized():
+        return dist.get_world_size()
+    else:
+        cuda_visible_devices = get_cuda_visible_devices()
+        if cuda_visible_devices is None:
+            return 0
+        return len(cuda_visible_devices)
+
+
+def get_cuda_visible_devices() -> List[int]:
+    cuda_visible_devices = os.getenv("CUDA_VISIBLE_DEVICES")
+    if cuda_visible_devices is not None:
+        cuda_visible_devices = list(map(int, cuda_visible_devices.split(",")))
+    return cuda_visible_devices

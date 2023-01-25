@@ -8,20 +8,18 @@ import deepspeed
 from transformers import AutoConfig
 from transformers.deepspeed import HfDeepSpeedConfig
 
-from ..utils import print_rank_n
+from ..utils import get_world_size
 from .model import Model, get_hf_model_class
 
 
 class DSZeROModel(Model):
     def __init__(self, args: Namespace) -> None:
-        print_rank_n("Loading model...")
-
         super().__init__(args)
 
         config = AutoConfig.from_pretrained(args.model_name)
 
-        world_size = int(os.getenv("WORLD_SIZE", "1"))
-        train_batch_size = 1 * world_size
+        train_micro_batch_size_per_gpu = 1
+        train_batch_size = train_micro_batch_size_per_gpu * get_world_size()
 
         # try playing with these parameters, might improve throughput for you
         # hardware setup
@@ -42,7 +40,7 @@ class DSZeROModel(Model):
             },
             "steps_per_print": 2000,
             "train_batch_size": train_batch_size,
-            "train_micro_batch_size_per_gpu": 1,
+            "train_micro_batch_size_per_gpu": train_micro_batch_size_per_gpu,
             "wall_clock_breakdown": False,
         }
 
@@ -64,8 +62,5 @@ class DSZeROModel(Model):
         # this is the CUDA device for the current process. This will be used
         # later to identify the GPU on which to transfer tensors
         self.input_device = torch.cuda.current_device()
-
-        print_rank_n("Model loaded")
-        dist.barrier()
 
         self.post_init(args.model_name)

@@ -10,6 +10,7 @@ gen-proto:
 
 	rm -rf inference_server/model_handler/grpc_utils/pb/*.py-e
 
+# ------------------------- DS inference -------------------------
 bloom-176b:
 	TOKENIZERS_PARALLELISM=false \
 	MODEL_NAME=bigscience/bloom \
@@ -55,6 +56,7 @@ bloom-176b-int8:
 	CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 \
 	gunicorn -t 0 -w 1 -b 127.0.0.1:5000 inference_server.server:app --access-logfile - --access-logformat '%(h)s %(t)s "%(r)s" %(s)s %(b)s'
 
+# ------------------------- HF accelerate -------------------------
 bloom-560m:
 	TOKENIZERS_PARALLELISM=false \
 	MODEL_NAME=bigscience/bloom-560m \
@@ -97,6 +99,16 @@ codegen-mono:
 	MAX_INPUT_LENGTH=2048 \
 	MAX_BATCH_SIZE=4 \
 	CUDA_VISIBLE_DEVICES=0 \
+	gunicorn -t 0 -w 1 -b 127.0.0.1:5000 inference_server.server:app --access-logfile - --access-logformat '%(h)s %(t)s "%(r)s" %(s)s %(b)s'
+
+# ------------------------- HF CPU -------------------------
+bloom-560m-cpu:
+	MODEL_NAME=bigscience/bloom-560m \
+	MODEL_CLASS=AutoModelForCausalLM \
+	DEPLOYMENT_FRAMEWORK=hf_cpu \
+	DTYPE=bf16 \
+	MAX_INPUT_LENGTH=2048 \
+	MAX_BATCH_SIZE=32 \
 	gunicorn -t 0 -w 1 -b 127.0.0.1:5000 inference_server.server:app --access-logfile - --access-logformat '%(h)s %(t)s "%(r)s" %(s)s %(b)s'
 
 ui:

@@ -5,7 +5,7 @@ from flask import Flask, request
 from flask_api import status
 from pydantic import BaseModel
 
-from .constants import DS_INFERENCE, DS_ZERO, HF_ACCELERATE
+from .constants import HF_ACCELERATE
 from .model_handler.deployment import ModelDeployment
 from .utils import (
     ForwardRequest,
@@ -37,15 +37,11 @@ class Args:
         self.max_input_length = int(os.getenv("MAX_INPUT_LENGTH", 512))
         self.max_batch_size = int(os.getenv("MAX_BATCH_SIZE", 4))
         self.debug = parse_bool(os.getenv("DEBUG", "false"))
-        self.always_allowed_ip = os.getenv("ALWAYS_ALLOWED_IP")
-        self.use_grpc_server = self.deployment_framework in [DS_INFERENCE, DS_ZERO]
-        self.cuda_visible_devices = os.getenv("CUDA_VISIBLE_DEVICES", list(range(8)))
-        self.cuda_visible_devices = list(map(int, self.cuda_visible_devices.split(",")))
 
 
 # ------------------------------------------------------
 args = Args()
-model = ModelDeployment(args, args.use_grpc_server, cuda_visible_devices=args.cuda_visible_devices)
+model = ModelDeployment(args, True)
 query_ids = QueryID()
 app = Flask(__name__)
 # ------------------------------------------------------

@@ -1,4 +1,4 @@
-from ..constants import DS_INFERENCE, DS_ZERO, HF_ACCELERATE
+from ..constants import DS_INFERENCE, DS_ZERO, HF_ACCELERATE, HF_CPU
 from .model import Model, get_hf_model_class, load_tokenizer
 
 
@@ -7,6 +7,10 @@ def get_model_class(deployment_framework: str):
         from .hf_accelerate import HFAccelerateModel
 
         return HFAccelerateModel
+    elif deployment_framework == HF_CPU:
+        from .hf_cpu import HFCPUModel
+
+        return HFCPUModel
     elif deployment_framework == DS_INFERENCE:
         from .ds_inference import DSInferenceModel
 
