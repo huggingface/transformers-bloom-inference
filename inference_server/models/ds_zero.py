@@ -8,7 +8,7 @@ import deepspeed
 from transformers import AutoConfig
 from transformers.deepspeed import HfDeepSpeedConfig
 
-from ..utils import print_rank_n
+from ..utils import get_world_size
 from .model import Model, get_hf_model_class
 
 
@@ -17,6 +17,9 @@ class DSZeROModel(Model):
         super().__init__(args)
 
         config = AutoConfig.from_pretrained(args.model_name)
+
+        train_micro_batch_size_per_gpu = 1
+        train_batch_size = train_micro_batch_size_per_gpu * get_world_size()
 
         # try playing with these parameters, might improve throughput for you
         # hardware setup
@@ -36,6 +39,8 @@ class DSZeROModel(Model):
                 "stage3_param_persistence_threshold": 0,
             },
             "steps_per_print": 2000,
+            "train_batch_size": train_batch_size,
+            "train_micro_batch_size_per_gpu": train_micro_batch_size_per_gpu,
             "wall_clock_breakdown": False,
         }
 
