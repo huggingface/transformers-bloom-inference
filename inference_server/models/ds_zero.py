@@ -20,9 +20,6 @@ class DSZeROModel(Model):
 
         config = AutoConfig.from_pretrained(args.model_name)
 
-        world_size = int(os.getenv("WORLD_SIZE", "1"))
-        train_batch_size = 1 * world_size
-
         # try playing with these parameters, might improve throughput for you
         # hardware setup
         ds_config = {
@@ -41,8 +38,6 @@ class DSZeROModel(Model):
                 "stage3_param_persistence_threshold": 0,
             },
             "steps_per_print": 2000,
-            "train_batch_size": train_batch_size,
-            "train_micro_batch_size_per_gpu": 1,
             "wall_clock_breakdown": False,
         }
 

@@ -12,7 +12,7 @@ import deepspeed
 from huggingface_hub import try_to_load_from_cache
 from transformers import AutoConfig
 
-from ..utils import print_rank_n, run_rank_n
+from ..utils import get_world_size, print_rank_n, run_rank_n
 from .model import Model, get_hf_model_class
 
 
@@ -22,8 +22,6 @@ class DSInferenceModel(Model):
         print_rank_n("Loading model...")
 
         super().__init__(args)
-
-        world_size = int(os.getenv("WORLD_SIZE", "1"))
 
         # create dummy tensors for allocating space which will be filled with
         # the actual weights while calling deepspeed.init_inference in the
@@ -44,7 +42,7 @@ class DSInferenceModel(Model):
             if os.path.isfile(checkpoints_json):
                 self.model = deepspeed.init_inference(
                     self.model,
-                    mp_size=world_size,
+                    mp_size=get_world_size(),
                     base_dir=downloaded_model_path,
                     dtype=args.dtype,
                     checkpoint=checkpoints_json,
@@ -57,7 +55,7 @@ class DSInferenceModel(Model):
                 with TemporaryCheckpointsJSON(downloaded_model_path) as checkpoints_json:
                     self.model = deepspeed.init_inference(
                         self.model,
-                        mp_size=world_size,
+                        mp_size=get_world_size(),
                         base_dir=downloaded_model_path,
                         dtype=args.dtype,
                         checkpoint=checkpoints_json,
