@@ -111,5 +111,11 @@ bloom-560m-cpu:
 	MAX_BATCH_SIZE=32 \
 	gunicorn -t 0 -w 1 -b 127.0.0.1:5000 inference_server.server:app --access-logfile - --access-logformat '%(h)s %(t)s "%(r)s" %(s)s %(b)s'
 
-ui:
-	python -m ui &
+flan-t5-base-cpu:
+	MODEL_NAME=google/flan-t5-base \
+	MODEL_CLASS=AutoModelForSeq2SeqLM \
+	DEPLOYMENT_FRAMEWORK=hf_cpu \
+	DTYPE=bf16 \
+	MAX_INPUT_LENGTH=2048 \
+	MAX_BATCH_SIZE=32 \
+	gunicorn -t 0 -w 1 -b 127.0.0.1:5000 inference_server.server:app --access-logfile - --access-logformat '%(h)s %(t)s "%(r)s" %(s)s %(b)s'

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Large Models Playground</title>
     <link href="{{ url_for('static', path='css/style.css') }}" rel="stylesheet">
-    <script type="module" src="{{ url_for('static', path='js/index.js') }}"></script>
+    <script type="module" src="{{ url_for('static', path='js/decoder.js') }}"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 </head>
 
@@ -55,7 +55,7 @@
         <button id="submit-button" style="margin-top: 10px;">Submit</button>
 
         <div style="margin-top: 10px;">
-            <textarea id="log-output" rows="7" style="color: black; background-color: lightblue;" readonly></textarea>
+            <textarea id="log-output" rows="40" style="color: black; background-color: lightblue;" readonly></textarea>
         </div>
     </div>
 </body>
