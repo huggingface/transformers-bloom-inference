@@ -81,8 +81,6 @@ clickButton.addEventListener('click', async (event) => {
         data: JSON.stringify(jsonPayload),
         headers: { 'Access-Control-Allow-Origin': '*' },
         success: function (response) {
-            var input_text = textGenInput.value;
-
             if ("text" in response) {
                 textLogOutput.value = response.text[0];
                 textLogOutput.value += '\n\ntotal_time_taken = ' + response.total_time_taken + "\n";
