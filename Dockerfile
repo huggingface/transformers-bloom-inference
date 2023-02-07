@@ -24,9 +24,6 @@ RUN conda update -n base -c defaults conda -y
 # cmake
 RUN conda install -c anaconda cmake -y
 
-# update conda
-RUN conda update -n base -c defaults conda -y
-
 # necessary stuff
 RUN pip install torch==1.12.1+cu116 --extra-index-url https://download.pytorch.org/whl/cu116 \
     transformers==4.25.1 \
@@ -67,5 +64,5 @@ CMD git clone https://github.com/huggingface/transformers-bloom-inference.git &&
     cd transformers-bloom-inference && \
     # install grpc and compile protos
     make gen-proto && \
-    make ui && \
+    make ui --model_name bigscience/bloom-560m && \
     make bloom-560m

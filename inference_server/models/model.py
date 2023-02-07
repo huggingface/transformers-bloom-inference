@@ -4,7 +4,7 @@ from typing import List, Union
 import torch
 
 import transformers
-from transformers import AutoModelForCausalLM, AutoModelForSeq2SeqLM, AutoTokenizer
+from transformers import AutoConfig, AutoModelForCausalLM, AutoModelForSeq2SeqLM, AutoTokenizer
 
 from ..utils import (
     ForwardRequest,
@@ -24,8 +24,8 @@ class Model:
         self.max_batch_size = args.max_batch_size
 
     def post_init(self, model_name: str) -> None:
+        self.is_encoder_decoder = AutoConfig.from_pretrained(model_name).is_encoder_decoder
         self.tokenizer = load_tokenizer(model_name)
-
         self.pad = self.tokenizer.pad_token_id
         self.prefix_token_id = self.tokenizer("A")["input_ids"][0]
 
@@ -62,7 +62,6 @@ class Model:
                 length_penalty=request.length_penalty,
                 no_repeat_ngram_size=request.no_repeat_ngram_size,
                 encoder_no_repeat_ngram_size=request.encoder_no_repeat_ngram_size,
-                num_return_sequences=request.num_return_sequences,
                 max_time=request.max_time,
                 max_new_tokens=request.max_new_tokens,
                 decoder_start_token_id=request.decoder_start_token_id,
@@ -75,19 +74,23 @@ class Model:
 
             output_tokens = output.sequences
 
-            generated_tokens = output_tokens[:, num_input_tokens:]
-            num_generated_tokens = (generated_tokens != self.pad).sum(dim=-1).tolist()
-
-            if request.remove_input_from_output:
-                # create the dummy prefix for detokenization
-                prefix_to_add = torch.tensor([[self.prefix_token_id]] * batch_size).to(self.input_device)
-                # the generate method's output includes input too. Remove input if
-                # that is requested by the user
-                generated_tokens = torch.cat([prefix_to_add, generated_tokens], dim=1)
-                generated_text = self.tokenizer.batch_decode(generated_tokens, skip_special_tokens=True)
-                generated_text = [i[1:] for i in generated_text]
-            else:
+            if self.is_encoder_decoder:
+                num_generated_tokens = (output_tokens != self.pad).sum(dim=-1).tolist()
                 generated_text = self.tokenizer.batch_decode(output_tokens, skip_special_tokens=True)
+            else:
+                generated_tokens = output_tokens[:, num_input_tokens:]
+                num_generated_tokens = (generated_tokens != self.pad).sum(dim=-1).tolist()
+
+                if request.remove_input_from_output:
+                    # create the dummy prefix for detokenization
+                    prefix_to_add = torch.tensor([[self.prefix_token_id]] * batch_size).to(self.input_device)
+                    # the generate method's output includes input too. Remove input if
+                    # that is requested by the user
+                    generated_tokens = torch.cat([prefix_to_add, generated_tokens], dim=1)
+                    generated_text = self.tokenizer.batch_decode(generated_tokens, skip_special_tokens=True)
+                    generated_text = [i[1:] for i in generated_text]
+                else:
+                    generated_text = self.tokenizer.batch_decode(output_tokens, skip_special_tokens=True)
 
             return GenerateResponse(text=generated_text, num_generated_tokens=num_generated_tokens)
         except Exception as exception:
