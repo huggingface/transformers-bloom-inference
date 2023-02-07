@@ -24,7 +24,6 @@ class GenerateRequest(BaseModel):
     length_penalty: float = None
     no_repeat_ngram_size: int = None
     encoder_no_repeat_ngram_size: int = None
-    num_return_sequences: int = None
     max_time: float = None
     max_new_tokens: int = None
     decoder_start_token_id: int = None
@@ -112,7 +111,6 @@ def create_generate_request(text: List[str], generate_kwargs: dict) -> GenerateR
         length_penalty=parse_field(generate_kwargs, "length_penalty", float),
         no_repeat_ngram_size=parse_field(generate_kwargs, "no_repeat_ngram_size", int),
         encoder_no_repeat_ngram_size=parse_field(generate_kwargs, "encoder_no_repeat_ngram_size", int),
-        num_return_sequences=parse_field(generate_kwargs, "num_return_sequences", int),
         max_time=parse_field(generate_kwargs, "max_time", float),
         max_new_tokens=parse_field(generate_kwargs, "max_new_tokens", int),
         decoder_start_token_id=parse_field(generate_kwargs, "decoder_start_token_id", int),

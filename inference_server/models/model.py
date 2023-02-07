@@ -62,7 +62,6 @@ class Model:
                 length_penalty=request.length_penalty,
                 no_repeat_ngram_size=request.no_repeat_ngram_size,
                 encoder_no_repeat_ngram_size=request.encoder_no_repeat_ngram_size,
-                num_return_sequences=request.num_return_sequences,
                 max_time=request.max_time,
                 max_new_tokens=request.max_new_tokens,
                 decoder_start_token_id=request.decoder_start_token_id,
