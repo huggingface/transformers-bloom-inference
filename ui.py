@@ -15,7 +15,7 @@ def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
 
     group = parser.add_argument_group(title="model")
-    group.add_argument("--model_name", type=str, help="model name")
+    group.add_argument("--model_name", type=str, required=True, help="model name")
 
     group = parser.add_argument_group(title="launch config")
     group.add_argument("--ui_host", type=str, default="127.0.0.1", help="host address for UI")
