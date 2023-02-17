@@ -6,13 +6,12 @@ from argparse import Namespace
 from functools import partial
 
 import torch
-import torch.distributed as dist
 
 import deepspeed
 from huggingface_hub import try_to_load_from_cache
 from transformers import AutoConfig
 
-from ..utils import get_world_size, print_rank_n, run_rank_n
+from ..utils import get_world_size, run_rank_n
 from .model import Model, get_hf_model_class
 
 
@@ -90,13 +89,17 @@ class TemporaryCheckpointsJSON:
 
 
 def get_model_path(model_name: str):
-    config_file = "config.json"
+    try:
+        config_file = "config.json"
 
-    # will fall back to HUGGINGFACE_HUB_CACHE
-    config_path = try_to_load_from_cache(model_name, config_file, cache_dir=os.getenv("TRANSFORMERS_CACHE"))
+        # will fall back to HUGGINGFACE_HUB_CACHE
+        config_path = try_to_load_from_cache(model_name, config_file, cache_dir=os.getenv("TRANSFORMERS_CACHE"))
 
-    if config_path is not None:
-        return os.path.dirname(config_path)
-    # treat the model name as an explicit model path
-    elif os.path.isfile(os.path.join(model_name, config_file)):
+        if config_path is None:
+            # treat the model name as an explicit model path
+            return model_name
+        elif os.path.isfile(os.path.join(model_name, config_file)):
+            return os.path.dirname(config_path)
+    except:
+        # treat the model name as an explicit model path
         return model_name
