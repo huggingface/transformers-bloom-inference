@@ -2,7 +2,7 @@ from argparse import Namespace
 
 import torch
 
-from ..utils import get_world_size, print_rank_n
+from ..utils import get_world_size
 from .model import Model, get_hf_model_class
 
 

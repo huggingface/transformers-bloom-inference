@@ -1,8 +1,6 @@
-import os
 from argparse import Namespace
 
 import torch
-import torch.distributed as dist
 
 import deepspeed
 from transformers import AutoConfig
