@@ -5,6 +5,7 @@ import os
 import time
 
 import torch
+import torch.distributed as dist
 
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
 
@@ -59,6 +60,17 @@ if infer_dtype == "int8":
 kwargs = dict(
     device_map="auto",
 )
+
+def get_world_size() -> int:
+    if dist.is_initialized():
+        return dist.get_world_size()
+    else:
+        return 1
+
+# balanced_low_0 - because it allows a larger batch size with multiple GPUs
+if get_world_size() > 1:
+    kwargs["device_map"] = "balanced_low_0"
+
 
 if infer_dtype == "int8":
     print_rank0("Using `load_in_8bit=True` to use quanitized model")
