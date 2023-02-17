@@ -66,7 +66,7 @@ def tokenize():
 
         return response.dict(), status.HTTP_200_OK
     except Exception:
-        response = get_exception_response(query_ids.tokenize_query_id, x.method, args.debug)
+        response = get_exception_response(query_ids.tokenize_query_id, args.debug)
         query_ids.tokenize_query_id += 1
         return response, status.HTTP_500_INTERNAL_SERVER_ERROR
 
@@ -87,7 +87,7 @@ def generate():
 
         return response.dict(), status.HTTP_200_OK
     except Exception:
-        response = get_exception_response(query_ids.generate_query_id, x.method, args.debug)
+        response = get_exception_response(query_ids.generate_query_id, args.debug)
         query_ids.generate_query_id += 1
         return response, status.HTTP_500_INTERNAL_SERVER_ERROR
 
@@ -109,6 +109,6 @@ def forward():
 
         return response.dict(), status.HTTP_200_OK
     except Exception:
-        response = get_exception_response(query_ids.forward_query_id, x.method, args.debug)
+        response = get_exception_response(query_ids.forward_query_id, args.debug)
         query_ids.forward_query_id += 1
         return response, status.HTTP_500_INTERNAL_SERVER_ERROR

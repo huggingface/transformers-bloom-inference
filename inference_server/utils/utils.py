@@ -164,9 +164,9 @@ def pad_ids(arrays, padding, max_length=-1):
     return arrays
 
 
-def get_exception_response(query_id: int, method: str, debug: bool = False):
+def get_exception_response(query_id: int, debug: bool = False):
     e_type, e_message, e_stack_trace = sys.exc_info()
-    response = {"error": str(e_type.__name__), "message": str(e_message), "query_id": query_id, "method": method}
+    response = {"error": str(e_type.__name__), "message": str(e_message), "query_id": query_id}
 
     if debug:
         trace_back = traceback.extract_tb(e_stack_trace)

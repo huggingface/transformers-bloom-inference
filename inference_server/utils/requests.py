@@ -32,7 +32,6 @@ class GenerateRequest(BaseModel):
     forced_eos_token_id: int = None
     exponential_decay_length_penalty: float = None
     remove_input_from_output: bool = False
-    method: str = "generate"
 
     def get_generate_kwargs(self) -> dict:
         x = {}
@@ -45,30 +44,26 @@ class GenerateRequest(BaseModel):
 class GenerateResponse(BaseResponse):
     text: List[str] = None
     num_generated_tokens: List[int] = None
-    method: str = "generate"
+    is_encoder_decoder: bool = False
 
 
 class TokenizeRequest(BaseModel):
     text: List[str] = None
-    padding: bool = False
-    method: str = "tokenize"
 
 
 class TokenizeResponse(BaseResponse):
     token_ids: List[List[int]] = None
-    attention_mask: List[List[int]] = None
-    method: str = "tokenize"
+    is_encoder_decoder: bool = False
 
 
 class ForwardRequest(BaseModel):
     conditioning_text: List[str] = None
     response: List[str] = None
-    method: str = "forward"
 
 
 class ForwardResponse(BaseResponse):
     nll: float = None
-    method: str = "forward"
+    is_encoder_decoder: bool = False
 
 
 def parse_bool(value: str) -> bool:
