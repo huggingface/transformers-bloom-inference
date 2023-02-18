@@ -80,12 +80,9 @@ class TemporaryCheckpointsJSON:
             json.dump(data, f)
 
     def __enter__(self):
-        run_rank_n(partial(os.makedirs, name=self.tmp_directory, exist_ok=True))
+        run_rank_n(partial(os.makedirs, name=self.tmp_directory, exist_ok=True), barrier=True)
         run_rank_n(partial(self.write_checkpoints_json, model_path=self.model_path), barrier=True)
         return self.tmp_file
-
-    def __exit__(self, type, value, traceback):
-        return
 
 
 def get_model_path(model_name: str):
