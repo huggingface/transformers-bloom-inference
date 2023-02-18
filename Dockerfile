@@ -64,5 +64,4 @@ CMD git clone https://github.com/huggingface/transformers-bloom-inference.git &&
     cd transformers-bloom-inference && \
     # install grpc and compile protos
     make gen-proto && \
-    make ui && \
     make bloom-560m
