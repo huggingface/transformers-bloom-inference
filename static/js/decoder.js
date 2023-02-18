@@ -86,7 +86,7 @@ clickButton.addEventListener('click', async (event) => {
             if ("text" in response) {
                 textGenInput.value = input_text + response.text[0];
 
-                textLogOutput.value = 'total_time_taken = ' + response.total_time_taken + "\n";
+                textLogOutput.value = 'total_time_taken = '  + " " + response.total_time_taken + "\n";
                 textLogOutput.value += 'num_generated_tokens = ' + response.num_generated_tokens + "\n";
                 textLogOutput.style.backgroundColor = "lightblue";
             } else {
