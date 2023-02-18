@@ -229,9 +229,3 @@ class ModelDeployment:
             response = self.model.tokenize(request)
 
         return response
-
-    def _request_response(self):
-        raise NotImplementedError("This method should not be implemented")
-
-    def query(self):
-        raise NotImplementedError("This method should not be implemented")

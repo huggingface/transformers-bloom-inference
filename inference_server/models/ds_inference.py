@@ -92,12 +92,11 @@ def get_model_path(model_name: str):
 
         # will fall back to HUGGINGFACE_HUB_CACHE
         config_path = try_to_load_from_cache(model_name, config_file, cache_dir=os.getenv("TRANSFORMERS_CACHE"))
-        print(config_path)
 
         if config_path is None:
             # treat the model name as an explicit model path
             return model_name
-        elif os.path.isfile(os.path.join(model_name, config_file)):
+        else:
             return os.path.dirname(config_path)
     except:
         # treat the model name as an explicit model path
