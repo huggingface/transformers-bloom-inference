@@ -30,6 +30,7 @@ class DSInferenceModel(Model):
         self.model = self.model.eval()
 
         downloaded_model_path = get_model_path(args.model_name)
+        print(downloaded_model_path)
 
         if args.dtype in [torch.float16, torch.int8]:
             # We currently support the weights provided by microsoft (which are
