@@ -14,9 +14,6 @@ from uvicorn import run
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
 
-    group = parser.add_argument_group(title="model")
-    group.add_argument("--model_name", type=str, required=True, help="model name")
-
     group = parser.add_argument_group(title="launch config")
     group.add_argument("--ui_host", type=str, default="127.0.0.1", help="host address for UI")
     group.add_argument("--ui_port", type=int, default=5001, help="port number for UI")
