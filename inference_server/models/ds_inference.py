@@ -30,7 +30,6 @@ class DSInferenceModel(Model):
         self.model = self.model.eval()
 
         downloaded_model_path = get_model_path(args.model_name)
-        print(downloaded_model_path)
 
         if args.dtype in [torch.float16, torch.int8]:
             # We currently support the weights provided by microsoft (which are
@@ -75,14 +74,15 @@ class TemporaryCheckpointsJSON:
         self.tmp_file = os.path.join(self.tmp_directory, "checkpoints.json")
         self.model_path = model_path
 
-    def write_checkpoints_json(self, model_path: str) -> None:
+    def write_checkpoints_json(self) -> None:
+        print(self.model_path)
         with io.open(self.tmp_file, "w", encoding="utf-8") as f:
-            data = {"type": "BLOOM", "checkpoints": glob.glob(f"{model_path}/*.bin"), "version": 1.0}
+            data = {"type": "BLOOM", "checkpoints": glob.glob(f"{self.model_path}/*.bin"), "version": 1.0}
             json.dump(data, f)
 
     def __enter__(self):
         run_rank_n(os.makedirs, barrier=True)(self.tmp_directory, exist_ok=True)
-        run_rank_n(self.write_checkpoints_json, barrier=True)(self.model_path)
+        run_rank_n(self.write_checkpoints_json, barrier=True)()
         return self.tmp_file
 
     def __exit__(self, type, value, traceback):
