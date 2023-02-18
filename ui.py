@@ -20,8 +20,10 @@ def get_args() -> argparse.Namespace:
     group = parser.add_argument_group(title="launch config")
     group.add_argument("--ui_host", type=str, default="127.0.0.1", help="host address for UI")
     group.add_argument("--ui_port", type=int, default=5001, help="port number for UI")
-    group.add_argument("--server_host", type=str, default="127.0.0.1", help="host address for generation server")
-    group.add_argument("--server_port", type=int, default=5000, help="port number for generation server")
+    group.add_argument(
+        "--generation_backend_host", type=str, default="127.0.0.1", help="host address for generation server"
+    )
+    group.add_argument("--generation_backend_port", type=int, default=5000, help="port number for generation server")
 
     return parser.parse_args()
 
@@ -31,8 +33,8 @@ class Server:
         self.templates = Jinja2Templates(directory="templates")
         self.ui_host = args.ui_host
         self.ui_port = args.ui_port
-        self.server_host = args.server_host
-        self.server_port = args.server_port
+        self.generation_backend_host = args.generation_backend_host
+        self.generation_backend_port = args.generation_backend_port
         self.workers = 1
 
         self.tokenizer = AutoTokenizer.from_pretrained("bigscience/bloom")
@@ -52,7 +54,11 @@ class Server:
         return self.templates.TemplateResponse("index.html", {"request": request})
 
     def generate(self, request: dict) -> JSONResponse:
-        response = requests.post(f"http://{self.server_host}:{self.server_port}/generate", json=request, verify=False)
+        response = requests.post(
+            f"http://{self.generation_backend_host}:{self.generation_backend_port}/generate",
+            json=request,
+            verify=False,
+        )
         return JSONResponse(content=response.json())
 
     def run(self):
