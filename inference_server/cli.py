@@ -3,7 +3,7 @@ import json
 import sys
 
 from .model_handler import ModelDeployment
-from .utils import get_argument_parser, parse_args, print_rank_n
+from .utils import get_argument_parser, parse_args, print_rank_0
 
 
 def get_args() -> argparse.Namespace:
@@ -35,8 +35,8 @@ def main() -> None:
 
         response = model.generate(text=[input_text], generate_kwargs=generate_kwargs)
 
-        print_rank_n("Output text:", response.text[0])
-        print_rank_n("Generated tokens:", response.num_generated_tokens[0])
+        print_rank_0("Output text:", response.text[0])
+        print_rank_0("Generated tokens:", response.num_generated_tokens[0])
 
 
 if __name__ == "__main__":

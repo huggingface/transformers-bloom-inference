@@ -21,7 +21,7 @@ from ..utils import (
     get_cuda_visible_devices,
     get_str_dtype,
     get_world_size,
-    print_rank_n,
+    print_rank_0,
 )
 from .grpc_utils.pb import generation_pb2, generation_pb2_grpc
 
@@ -53,7 +53,7 @@ class ModelDeployment:
         else:
             self.model = get_model_class(args.deployment_framework)(args)
 
-        print_rank_n("model loaded")
+        print_rank_0("model loaded")
 
     def should_use_grpc(self, deployment_framework: str, grpc_allowed: bool) -> bool:
         if grpc_allowed and get_world_size() > 1:
@@ -94,8 +94,8 @@ class ModelDeployment:
             if not process_alive:
                 raise RuntimeError("server crashed for some reason, unable to proceed")
             time.sleep(4)
-            print_rank_n("waiting for server to start...")
-        print_rank_n(f"server has started on {self.ports[0]}")
+            print_rank_0("waiting for server to start...")
+        print_rank_0(f"server has started on {self.ports[0]}")
 
     def dict_to_proto(self, generate_kwargs: dict) -> dict:
         result = {}
