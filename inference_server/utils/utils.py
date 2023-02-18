@@ -7,7 +7,7 @@ import sys
 import time
 import traceback
 from functools import partial
-from typing import Any, List, Tuple, Union
+from typing import Any, Callable, List, Tuple, Union
 
 import torch
 import torch.distributed as dist
@@ -74,29 +74,30 @@ def parse_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
     return args
 
 
-def run_rank_n(func: partial, barrier: bool = False, rank: int = 0, other_rank_output: Any = None) -> Any:
-    # runs function on only process with specified rank
+def run_rank_n(func: Callable, rank: int = 0, barrier: bool = False) -> None:
+    # wrapper function for the rank to execute on
+    def func_rank_n(*args, **kwargs):
+        output = func(*args, **kwargs)
+        if barrier:
+            dist.barrier()
+        return output
+
+    # a dummy method that doesn't do anything
+    def func_rank_other(*args, **kwargs):
+        if barrier:
+            dist.barrier()
+
     if dist.is_initialized():
         if dist.get_rank() == rank:
-            output = func()
-            if barrier:
-                dist.barrier()
-            return output
-        else:
-            if barrier:
-                dist.barrier()
-            return other_rank_output
+            return func_rank_n
+        return func_rank_other
     else:
-        return func()
+        return func
 
 
-def print_rank_n(*values, rank: int = 0) -> None:
-    # print on only process with specified rank
-    if dist.is_initialized():
-        if dist.get_rank() == rank:
-            print(*values)
-    else:
-        print(*values)
+@run_rank_n
+def print_rank_0(*args, **kwargs) -> None:
+    print(*args, **kwargs)
 
 
 def get_torch_dtype(dtype_str: str) -> torch.dtype:
