@@ -85,6 +85,9 @@ class TemporaryCheckpointsJSON:
         run_rank_n(self.write_checkpoints_json, barrier=True)(self.model_path)
         return self.tmp_file
 
+    def __exit__(self, type, value, traceback):
+        return
+
 
 def get_model_path(model_name: str):
     try:
