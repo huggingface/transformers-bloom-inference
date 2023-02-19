@@ -14,7 +14,7 @@ from .utils import (
     get_dummy_batch,
     get_world_size,
     parse_args,
-    print_rank_n,
+    print_rank_0,
     run_and_log_time,
 )
 
@@ -49,18 +49,18 @@ def benchmark_end_to_end(args: argparse.Namespace) -> None:
 
     request = create_generate_request(get_dummy_batch(args.batch_size), args.generate_kwargs)
 
-    print_rank_n(f"generate_kwargs = {args.generate_kwargs}")
-    print_rank_n(f"batch_size = {args.batch_size}")
+    print_rank_0(f"generate_kwargs = {args.generate_kwargs}")
+    print_rank_0(f"batch_size = {args.batch_size}")
 
     # warmup is a must if measuring speed as it's when all the optimizations are performed
     # e.g. on 8x80 a100 the first pass of 100 tokens takes 23sec, and the next one is 4secs
     response = model.generate(request=request)
 
     for i, (o, _) in zip(request.text, zip(response.text, response.num_generated_tokens)):
-        print_rank_n(f"{'-' * 60}\nin = {i}\nout = {o}\n")
+        print_rank_0(f"{'-' * 60}\nin = {i}\nout = {o}\n")
 
     if args.benchmark_cycles > 0:
-        print_rank_n("*** Running benchmark")
+        print_rank_0("*** Running benchmark")
 
         torch.cuda.empty_cache()
         gc.collect()
@@ -78,7 +78,7 @@ def benchmark_end_to_end(args: argparse.Namespace) -> None:
         if args.deployment_framework == DS_ZERO:
             total_new_tokens_generated *= get_world_size()
 
-        print_rank_n(
+        print_rank_0(
             get_benchmark_results(
                 benchmark_time, initialization_time, total_new_tokens_generated, args.batch_size, args.benchmark_cycles
             )

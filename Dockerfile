@@ -26,9 +26,9 @@ RUN conda install -c anaconda cmake -y
 
 # necessary stuff
 RUN pip install torch==1.12.1+cu116 --extra-index-url https://download.pytorch.org/whl/cu116 \
-    transformers==4.25.1 \
+    transformers==4.26.1 \
     deepspeed==0.7.6 \
-    accelerate==0.15.0 \
+    accelerate==0.16.0 \
     gunicorn==20.1.0 \
     flask \
     flask_api \
@@ -36,7 +36,7 @@ RUN pip install torch==1.12.1+cu116 --extra-index-url https://download.pytorch.o
     uvicorn==0.19.0 \
     jinja2==3.1.2 \
     pydantic==1.10.2 \
-    huggingface_hub==0.10.1 \
+    huggingface_hub==0.12.1 \
 	grpcio-tools==1.50.0 \
     --no-cache-dir
 
@@ -64,5 +64,4 @@ CMD git clone https://github.com/huggingface/transformers-bloom-inference.git &&
     cd transformers-bloom-inference && \
     # install grpc and compile protos
     make gen-proto && \
-    make ui model_name=bigscience/bloom-560m && \
     make bloom-560m

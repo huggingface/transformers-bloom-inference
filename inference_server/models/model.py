@@ -92,7 +92,11 @@ class Model:
                 else:
                     generated_text = self.tokenizer.batch_decode(output_tokens, skip_special_tokens=True)
 
-            return GenerateResponse(text=generated_text, num_generated_tokens=num_generated_tokens)
+            return GenerateResponse(
+                text=generated_text,
+                num_generated_tokens=num_generated_tokens,
+                is_encoder_decoder=self.is_encoder_decoder,
+            )
         except Exception as exception:
             return exception
 
@@ -140,13 +144,15 @@ class Model:
 
             loss = self.model(**input_tokens).loss
 
-            return ForwardResponse(nll=loss.item())
+            return ForwardResponse(nll=loss.item(), is_encoder_decoder=self.is_encoder_decoder)
         except Exception as exception:
             return exception
 
     def tokenize(self, request: TokenizeRequest) -> TokenizeResponse:
-        response = self.tokenizer(request.text, padding=request.padding)
-        return TokenizeResponse(token_ids=response.input_ids, attention_mask=response.attention_mask)
+        return TokenizeResponse(
+            token_ids=self.tokenizer(request.text).input_ids,
+            is_encoder_decoder=self.is_encoder_decoder,
+        )
 
 
 def check_max_input_length(input_token_length: int, max_input_length: int) -> None:

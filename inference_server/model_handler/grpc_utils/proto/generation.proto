@@ -24,6 +24,7 @@ message GenerationResponseProto {
     repeated string texts = 1;
     repeated int32 num_generated_tokens = 2;
     string error = 3;
+    bool is_encoder_decoder = 4;
 }
 
 message ForwardRequestProto {
@@ -34,4 +35,5 @@ message ForwardRequestProto {
 message ForwardResponseProto {
     float nll = 1;
     string error = 2;
+    bool is_encoder_decoder = 3;
 }

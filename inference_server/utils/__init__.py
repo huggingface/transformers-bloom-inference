@@ -20,7 +20,7 @@ from .utils import (
     get_world_size,
     pad_ids,
     parse_args,
-    print_rank_n,
+    print_rank_0,
     run_and_log_time,
     run_rank_n,
 )

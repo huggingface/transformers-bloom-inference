@@ -7,7 +7,7 @@ import grpc
 
 # from ...constants import GRPC_MAX_MSG_SIZE
 from ...models import Model
-from ...utils import ForwardRequest, create_generate_request, print_rank_n
+from ...utils import ForwardRequest, TokenizeRequest, create_generate_request, print_rank_0
 from .pb import generation_pb2, generation_pb2_grpc
 
 
@@ -33,10 +33,14 @@ class GenerationServer(generation_pb2_grpc.GenerationServiceServicer):
 
         if isinstance(response, Exception):
             # if exception occurs, we don't this subprocess to crash
-            response = generation_pb2.GenerationResponseProto(error=str(response))
+            response = generation_pb2.GenerationResponseProto(
+                error=str(response), is_encoder_decoder=response.is_encoder_decoder
+            )
         else:
             response = generation_pb2.GenerationResponseProto(
-                texts=response.text, num_generated_tokens=response.num_generated_tokens
+                texts=response.text,
+                num_generated_tokens=response.num_generated_tokens,
+                is_encoder_decoder=response.is_encoder_decoder,
             )
 
         return response
@@ -55,9 +59,13 @@ class GenerationServer(generation_pb2_grpc.GenerationServiceServicer):
 
         if isinstance(response, Exception):
             # if exception occurs, we don't this subprocess to crash
-            response = generation_pb2.ForwardResponseProto(error=str(response))
+            response = generation_pb2.ForwardResponseProto(
+                error=str(response), is_encoder_decoder=response.is_encoder_decoder
+            )
         else:
-            response = generation_pb2.ForwardResponseProto(nll=response.nll)
+            response = generation_pb2.ForwardResponseProto(
+                nll=response.nll, is_encoder_decoder=response.is_encoder_decoder
+            )
 
         return response
 
@@ -72,7 +80,7 @@ def serve(inference_pipeline, port):
     )
     generation_pb2_grpc.add_GenerationServiceServicer_to_server(GenerationServer(inference_pipeline), server)
     server.add_insecure_port(f"[::]:{port}")
-    print_rank_n("About to start server")
+    print_rank_0("About to start server")
     server.start()
-    print_rank_n("Started")
+    print_rank_0("Started")
     server.wait_for_termination()
