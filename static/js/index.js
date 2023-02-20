@@ -58,7 +58,7 @@ clickButton.addEventListener('click', async (event) => {
     clickButton.disabled = true;
 
     var jsonPayload = {
-        text: [textGenInput.value],
+        text: [textGenInput.textContent],
         temperature: get_temperature(),
         top_k: get_top_k(),
         top_p: get_top_p(),
@@ -81,13 +81,11 @@ clickButton.addEventListener('click', async (event) => {
         data: JSON.stringify(jsonPayload),
         headers: { 'Access-Control-Allow-Origin': '*' },
         success: function (response) {
-            var input_text = textGenInput.value;
-
             if ("text" in response) {
                 if (response.is_encoder_decoder) {
                     textLogOutput.value = response.text[0] + '\n\n';
                 } else {
-                    textGenInput.value = input_text + response.text[0];
+                    textGenInput.innerHTML = textGenInput.innerHTML + '<span style="color:blue">' + response.text[0] + '<span style="color:black">&nbsp;';
                     textLogOutput.value = '';
                 }
 
