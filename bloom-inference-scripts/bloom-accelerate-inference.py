@@ -61,11 +61,13 @@ kwargs = dict(
     device_map="auto",
 )
 
+
 def get_world_size() -> int:
     if dist.is_initialized():
         return dist.get_world_size()
     else:
         return 1
+
 
 # balanced_low_0 - because it allows a larger batch size with multiple GPUs
 if get_world_size() > 1:
