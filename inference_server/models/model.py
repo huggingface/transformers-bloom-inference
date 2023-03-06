@@ -1,10 +1,11 @@
 import argparse
+import copy
 from typing import List, Union
 
 import torch
 
 import transformers
-from transformers import AutoConfig, AutoModelForCausalLM, AutoModelForSeq2SeqLM, AutoTokenizer
+from transformers import AutoConfig, AutoModelForCausalLM, AutoModelForSeq2SeqLM, AutoTokenizer, GenerationConfig
 
 from ..utils import (
     ForwardRequest,
@@ -25,9 +26,23 @@ class Model:
 
     def post_init(self, model_name: str) -> None:
         self.is_encoder_decoder = AutoConfig.from_pretrained(model_name).is_encoder_decoder
+        self.generation_config = GenerationConfig.from_model_config(AutoConfig.from_pretrained(model_name))
         self.tokenizer = load_tokenizer(model_name)
         self.pad = self.tokenizer.pad_token_id
         self.prefix_token_id = self.tokenizer("A")["input_ids"][0]
+
+    def get_generation_config(self, request: GenerateRequest) -> GenerationConfig:
+        generation_config = copy.deepcopy(self.generation_config)
+        request = dict(request)
+
+        request_filtered = {}
+        for key, value in request.items():
+            if value is not None and key not in ["text", "remove_input_from_output"]:
+                request_filtered[key] = value
+        request_filtered["return_dict_in_generate"] = True
+
+        generation_config.update(**request_filtered)
+        return generation_config
 
     def generate(self, request: GenerateRequest) -> Union[GenerateResponse, Exception]:
         try:
@@ -46,31 +61,9 @@ class Model:
 
             num_input_tokens = input_tokens["input_ids"].shape[1]
 
-            output = self.model.generate(
-                **input_tokens,
-                min_length=request.min_length,
-                do_sample=request.do_sample,
-                early_stopping=request.early_stopping,
-                temperature=request.temperature,
-                top_k=request.top_k,
-                top_p=request.top_p,
-                typical_p=request.typical_p,
-                repetition_penalty=request.repetition_penalty,
-                bos_token_id=request.bos_token_id,
-                pad_token_id=request.pad_token_id,
-                eos_token_id=request.eos_token_id,
-                length_penalty=request.length_penalty,
-                no_repeat_ngram_size=request.no_repeat_ngram_size,
-                encoder_no_repeat_ngram_size=request.encoder_no_repeat_ngram_size,
-                max_time=request.max_time,
-                max_new_tokens=request.max_new_tokens,
-                decoder_start_token_id=request.decoder_start_token_id,
-                diversity_penalty=request.diversity_penalty,
-                forced_bos_token_id=request.forced_bos_token_id,
-                forced_eos_token_id=request.forced_eos_token_id,
-                exponential_decay_length_penalty=request.exponential_decay_length_penalty,
-                return_dict_in_generate=True,
-            )
+            generation_config = self.get_generation_config(request)
+
+            output = self.model.generate(**input_tokens, generation_config=generation_config)
 
             output_tokens = output.sequences
 
