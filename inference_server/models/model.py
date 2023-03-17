@@ -4,8 +4,7 @@ from typing import List, Union
 
 import torch
 
-import transformers
-from transformers import AutoConfig, AutoModelForCausalLM, AutoModelForSeq2SeqLM, AutoTokenizer, GenerationConfig
+from transformers import AutoConfig, AutoTokenizer, GenerationConfig
 
 from ..utils import (
     ForwardRequest,

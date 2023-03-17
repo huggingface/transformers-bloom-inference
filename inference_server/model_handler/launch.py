@@ -7,7 +7,7 @@ import argparse
 import torch.distributed as dist
 
 from ..models import get_model_class, start_inference_engine
-from ..utils import get_argument_parser, parse_args
+from ..utils import get_argument_parser
 from .grpc_utils.generation_server import serve
 
 
@@ -19,7 +19,7 @@ def get_args() -> argparse.Namespace:
     group.add_argument("--cpu_offload", action="store_true", help="whether to activate CPU offload for DS ZeRO")
     group.add_argument("--ports", nargs="+", help="GRPC ports")
 
-    args = parse_args(parser)
+    args = parser.parse_args()
     return args
 
 

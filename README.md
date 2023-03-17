@@ -41,13 +41,9 @@ python -m inference_server.cli --model_name microsoft/bloom-deepspeed-inference-
 
 ## BLOOM server deployment
 
-[make <model_name>](../Makefile) can be used to launch a generation server. Please note that the serving method is synchronous and users have to wait in queue until the preceding requests have been processed. An example to fire server requests is given [here](./server_request.py). Alternativey, a [Dockerfile](./Dockerfile) is also provided which launches a generation server on port 5000.
+[make <model_name>](./Makefile) can be used to launch a generation server. Please note that the serving method is synchronous and users have to wait in queue until the preceding requests have been processed. An example to fire server requests is given [here](./server_request.py). Alternativey, a [Dockerfile](./Dockerfile) is also provided which launches a generation server on port 5000. An interactive UI is also launched on `http://127.0.0.1:5001/`.
 
-An interactive UI can be launched via the following command to connect to the generation server. The default URL of the UI is `http://127.0.0.1:5001/`. The `model_name` is just used by the UI to check if the model is decoder or encoder-decoder model.
-```shell
-python -m ui --model_name bigscience/bloom
-```
-This command launches the following UI to play with generation. Sorry for the crappy design. Unfotunately, my UI skills only go so far. 😅😅😅
+The following UI is launched. Sorry for the crappy design. Unfotunately, my UI skills only go so far. 😅😅😅
 ![image](assets/UI.png)
 
 ## Benchmark system for BLOOM inference
