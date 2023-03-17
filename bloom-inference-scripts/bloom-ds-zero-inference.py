@@ -152,6 +152,8 @@ if args.batch_size > len(input_sentences):
     input_sentences *= math.ceil(args.batch_size / len(input_sentences))
 
 generate_kwargs = dict(max_new_tokens=num_tokens, do_sample=False)
+# Important: if using multiple unique streams to avoid hanging if one generation finished early - one must also add:
+# generate_kwargs.update(synced_gpus=True)
 
 print_rank0(f"Generate args {generate_kwargs}")
 inputs = input_sentences[: args.batch_size]
