@@ -1,6 +1,9 @@
 import os
 from functools import partial
 
+import torch
+
+import transformers
 from flask import Flask, request
 from flask_api import status
 from pydantic import BaseModel
@@ -13,7 +16,6 @@ from .utils import (
     TokenizeRequest,
     get_exception_response,
     get_num_tokens_to_generate,
-    get_torch_dtype,
     parse_bool,
     run_and_log_time,
 )
@@ -31,8 +33,8 @@ class Args:
     def __init__(self) -> None:
         self.deployment_framework = os.getenv("DEPLOYMENT_FRAMEWORK", HF_ACCELERATE)
         self.model_name = os.getenv("MODEL_NAME")
-        self.model_class = os.getenv("MODEL_CLASS")
-        self.dtype = get_torch_dtype(os.getenv("DTYPE"))
+        self.model_class = getattr(transformers, os.getenv("MODEL_CLASS"))
+        self.dtype = getattr(torch, os.getenv("DTYPE"))
         self.allowed_max_new_tokens = int(os.getenv("ALLOWED_MAX_NEW_TOKENS", 100))
         self.max_input_length = int(os.getenv("MAX_INPUT_LENGTH", 512))
         self.max_batch_size = int(os.getenv("MAX_BATCH_SIZE", 4))

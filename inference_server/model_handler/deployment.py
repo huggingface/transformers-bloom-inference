@@ -19,7 +19,6 @@ from ..utils import (
     TokenizeResponse,
     create_generate_request,
     get_cuda_visible_devices,
-    get_str_dtype,
     get_world_size,
     print_rank_0,
 )
@@ -116,7 +115,7 @@ class ModelDeployment:
         if args.deployment_framework in [DS_INFERENCE, DS_ZERO]:
             ports = " ".join(map(str, self.ports))
 
-            cmd = f"inference_server.model_handler.launch --model_name {args.model_name} --deployment_framework {args.deployment_framework} --dtype {get_str_dtype(args.dtype)} --port {ports} --model_class {args.model_class}"
+            cmd = f"inference_server.model_handler.launch --model_name {args.model_name} --deployment_framework {args.deployment_framework} --dtype {str(args.dtype).split('.')[1]} --port {ports} --model_class {args.model_class}"
 
             if args.max_batch_size is not None:
                 cmd += f" --max_batch_size {args.max_batch_size}"

@@ -1,19 +1,12 @@
-import argparse
 import json
 import sys
 
 from .model_handler import ModelDeployment
-from .utils import get_argument_parser, parse_args, print_rank_0
-
-
-def get_args() -> argparse.Namespace:
-    parser = get_argument_parser()
-    args = parse_args(parser)
-    return args
+from .utils import get_argument_parser, print_rank_0
 
 
 def main() -> None:
-    args = get_args()
+    args = get_argument_parser().parse_args()
 
     model = ModelDeployment(args, True)
 

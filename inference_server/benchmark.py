@@ -13,7 +13,6 @@ from .utils import (
     get_argument_parser,
     get_dummy_batch,
     get_world_size,
-    parse_args,
     print_rank_0,
     run_and_log_time,
 )
@@ -94,7 +93,7 @@ def get_args() -> argparse.Namespace:
     group.add_argument("--batch_size", default=1, type=int, help="batch size")
     group.add_argument("--cpu_offload", action="store_true", help="whether to activate CPU offload for DS ZeRO")
 
-    args = parse_args(parser)
+    args = parser.parse_args()
 
     launched_with_deepspeed = args.deployment_framework in [DS_INFERENCE, DS_ZERO]
 

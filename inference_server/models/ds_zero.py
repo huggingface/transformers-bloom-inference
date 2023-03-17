@@ -7,7 +7,7 @@ from transformers import AutoConfig
 from transformers.deepspeed import HfDeepSpeedConfig
 
 from ..utils import get_world_size
-from .model import Model, get_hf_model_class
+from .model import Model
 
 
 class DSZeROModel(Model):
@@ -48,7 +48,7 @@ class DSZeROModel(Model):
         # this tells from_pretrained to instantiate directly on gpus
         dschf = HfDeepSpeedConfig(ds_config)
 
-        self.model = get_hf_model_class(args.model_class).from_pretrained(args.model_name, torch_dtype=args.dtype)
+        self.model = args.model_class.from_pretrained(args.model_name, torch_dtype=args.dtype)
         self.model = self.model.eval()
 
         # convert model to a fully sharded model using ZeRO

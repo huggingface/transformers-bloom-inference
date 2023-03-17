@@ -19,7 +19,6 @@ def get_args() -> argparse.Namespace:
     group.add_argument("--ports", nargs="+", help="GRPC ports")
 
     args = parse_args(parser)
-
     return args
 
 

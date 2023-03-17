@@ -3,7 +3,7 @@ from argparse import Namespace
 import torch
 
 from ..utils import get_world_size
-from .model import Model, get_hf_model_class
+from .model import Model
 
 
 class HFAccelerateModel(Model):
@@ -23,7 +23,7 @@ class HFAccelerateModel(Model):
 
         # this is the CUDA device for the current process. This will be used
         # later to identify the GPU on which to transfer tensors
-        self.model = get_hf_model_class(args.model_class).from_pretrained(**kwargs)
+        self.model = args.model_class.from_pretrained(**kwargs)
 
         self.model.requires_grad_(False)
         self.model.eval()

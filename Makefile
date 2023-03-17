@@ -21,7 +21,7 @@ bloom-176b:
 	MODEL_NAME=bigscience/bloom \
 	MODEL_CLASS=AutoModelForCausalLM \
 	DEPLOYMENT_FRAMEWORK=ds_inference \
-	DTYPE=fp16 \
+	DTYPE=float16 \
 	MAX_INPUT_LENGTH=2048 \
 	MAX_BATCH_SIZE=4 \
 	CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 \
@@ -35,7 +35,7 @@ microsoft-bloom-176b:
 	MODEL_NAME=microsoft/bloom-deepspeed-inference-fp16 \
 	MODEL_CLASS=AutoModelForCausalLM \
 	DEPLOYMENT_FRAMEWORK=ds_inference \
-	DTYPE=fp16 \
+	DTYPE=float16 \
 	MAX_INPUT_LENGTH=2048 \
 	MAX_BATCH_SIZE=4 \
 	CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 \
@@ -48,7 +48,7 @@ bloomz-176b:
 	MODEL_NAME=bigscience/bloomz \
 	MODEL_CLASS=AutoModelForCausalLM \
 	DEPLOYMENT_FRAMEWORK=ds_inference \
-	DTYPE=fp16 \
+	DTYPE=float16 \
 	MAX_INPUT_LENGTH=2048 \
 	MAX_BATCH_SIZE=4 \
 	CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 \
@@ -75,7 +75,7 @@ bloom-560m:
 	MODEL_NAME=bigscience/bloom-560m \
 	MODEL_CLASS=AutoModelForCausalLM \
 	DEPLOYMENT_FRAMEWORK=hf_accelerate \
-	DTYPE=bf16 \
+	DTYPE=bfloat16 \
 	MAX_INPUT_LENGTH=2048 \
 	MAX_BATCH_SIZE=32 \
 	CUDA_VISIBLE_DEVICES=0 \
@@ -88,7 +88,7 @@ flan-t5-xxl:
 	MODEL_NAME=google/flan-t5-xxl \
 	MODEL_CLASS=AutoModelForSeq2SeqLM \
 	DEPLOYMENT_FRAMEWORK=hf_accelerate \
-	DTYPE=bf16 \
+	DTYPE=bfloat16 \
 	MAX_INPUT_LENGTH=2048 \
 	MAX_BATCH_SIZE=4 \
 	CUDA_VISIBLE_DEVICES=0 \
@@ -101,7 +101,7 @@ ul2:
 	MODEL_NAME=google/ul2 \
 	MODEL_CLASS=AutoModelForSeq2SeqLM \
 	DEPLOYMENT_FRAMEWORK=hf_accelerate \
-	DTYPE=bf16 \
+	DTYPE=bfloat16 \
 	MAX_INPUT_LENGTH=2048 \
 	MAX_BATCH_SIZE=4 \
 	CUDA_VISIBLE_DEVICES=0 \
@@ -114,7 +114,7 @@ codegen-mono:
 	MODEL_NAME=Salesforce/codegen-16B-mono \
 	MODEL_CLASS=AutoModelForCausalLM \
 	DEPLOYMENT_FRAMEWORK=hf_accelerate \
-	DTYPE=bf16 \
+	DTYPE=bfloat16 \
 	MAX_INPUT_LENGTH=2048 \
 	MAX_BATCH_SIZE=4 \
 	CUDA_VISIBLE_DEVICES=0 \
@@ -127,7 +127,7 @@ bloom-560m-cpu:
 	MODEL_NAME=bigscience/bloom-560m \
 	MODEL_CLASS=AutoModelForCausalLM \
 	DEPLOYMENT_FRAMEWORK=hf_cpu \
-	DTYPE=fp32 \
+	DTYPE=float32 \
 	MAX_INPUT_LENGTH=2048 \
 	MAX_BATCH_SIZE=32 \
 	gunicorn -t 0 -w 1 -b 127.0.0.1:5000 inference_server.server:app --access-logfile - --access-logformat '%(h)s %(t)s "%(r)s" %(s)s %(b)s'
@@ -138,7 +138,7 @@ flan-t5-base-cpu:
 	MODEL_NAME=google/flan-t5-base \
 	MODEL_CLASS=AutoModelForSeq2SeqLM \
 	DEPLOYMENT_FRAMEWORK=hf_cpu \
-	DTYPE=bf16 \
+	DTYPE=bfloat16 \
 	MAX_INPUT_LENGTH=2048 \
 	MAX_BATCH_SIZE=32 \
 	gunicorn -t 0 -w 1 -b 127.0.0.1:5000 inference_server.server:app --access-logfile - --access-logformat '%(h)s %(t)s "%(r)s" %(s)s %(b)s'
