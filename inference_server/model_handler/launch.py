@@ -1,5 +1,6 @@
 """
 Copyright 2022 The Microsoft DeepSpeed Team
+The logic in this file is borrowed from DeepSpeed-MII
 """
 import argparse
 
