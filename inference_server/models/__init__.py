@@ -1,5 +1,5 @@
 from ..constants import DS_INFERENCE, DS_ZERO, HF_ACCELERATE, HF_CPU
-from .model import Model, get_hf_model_class, load_tokenizer
+from .model import Model, load_tokenizer
 
 
 def get_model_class(deployment_framework: str):

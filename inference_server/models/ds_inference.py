@@ -3,7 +3,6 @@ import io
 import json
 import os
 from argparse import Namespace
-from functools import partial
 
 import torch
 
@@ -12,7 +11,7 @@ from huggingface_hub import try_to_load_from_cache
 from transformers import AutoConfig
 
 from ..utils import get_world_size, run_rank_n
-from .model import Model, get_hf_model_class
+from .model import Model
 
 
 # basic DeepSpeed inference model class for benchmarking
@@ -24,7 +23,7 @@ class DSInferenceModel(Model):
         # the actual weights while calling deepspeed.init_inference in the
         # following code
         with deepspeed.OnDevice(dtype=torch.float16, device="meta"):
-            self.model = get_hf_model_class(args.model_class).from_config(
+            self.model = args.model_class.from_config(
                 AutoConfig.from_pretrained(args.model_name), torch_dtype=torch.bfloat16
             )
         self.model = self.model.eval()

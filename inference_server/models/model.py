@@ -4,8 +4,7 @@ from typing import List, Union
 
 import torch
 
-import transformers
-from transformers import AutoConfig, AutoModelForCausalLM, AutoModelForSeq2SeqLM, AutoTokenizer, GenerationConfig
+from transformers import AutoConfig, AutoTokenizer, GenerationConfig
 
 from ..utils import (
     ForwardRequest,
@@ -162,11 +161,6 @@ def check_batch_size(batch_size: int, max_batch_size: int) -> None:
 
     if batch_size > max_batch_size:
         raise Exception(f"max supported batch size = {max_batch_size} for now")
-
-
-# this is a hack for now
-def get_hf_model_class(model_class: str) -> Union[AutoModelForCausalLM, AutoModelForSeq2SeqLM]:
-    return getattr(transformers, model_class)
 
 
 def load_tokenizer(model_name: str) -> AutoTokenizer:

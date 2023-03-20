@@ -5,9 +5,8 @@ import torch
 
 import grpc
 
-# from ...constants import GRPC_MAX_MSG_SIZE
 from ...models import Model
-from ...utils import ForwardRequest, TokenizeRequest, create_generate_request, print_rank_0
+from ...utils import ForwardRequest, create_generate_request, print_rank_0
 from .pb import generation_pb2, generation_pb2_grpc
 
 

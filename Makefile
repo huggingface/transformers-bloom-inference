@@ -11,17 +11,19 @@ gen-proto:
 	rm -rf inference_server/model_handler/grpc_utils/pb/*.py-e
 
 ui:
-	python -m ui --ui_host 127.0.0.1 --ui_port 5001 --generation_backend_host 127.0.0.1 --generation_backend_port 5000 &
+	python -m inference_server.ui --ui_host 127.0.0.1 --ui_port 5001 --generation_backend_host 127.0.0.1 --generation_backend_port 5000 &
 
 # ------------------------- DS inference -------------------------
 bloom-176b:
+	make gen-proto
+
 	make ui
 
 	TOKENIZERS_PARALLELISM=false \
 	MODEL_NAME=bigscience/bloom \
 	MODEL_CLASS=AutoModelForCausalLM \
 	DEPLOYMENT_FRAMEWORK=ds_inference \
-	DTYPE=fp16 \
+	DTYPE=float16 \
 	MAX_INPUT_LENGTH=2048 \
 	MAX_BATCH_SIZE=4 \
 	CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 \
@@ -29,32 +31,38 @@ bloom-176b:
 
 # loads faster than the above one
 microsoft-bloom-176b:
+	make gen-proto
+
 	make ui
 
 	TOKENIZERS_PARALLELISM=false \
 	MODEL_NAME=microsoft/bloom-deepspeed-inference-fp16 \
 	MODEL_CLASS=AutoModelForCausalLM \
 	DEPLOYMENT_FRAMEWORK=ds_inference \
-	DTYPE=fp16 \
+	DTYPE=float16 \
 	MAX_INPUT_LENGTH=2048 \
 	MAX_BATCH_SIZE=4 \
 	CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 \
 	gunicorn -t 0 -w 1 -b 127.0.0.1:5000 inference_server.server:app --access-logfile - --access-logformat '%(h)s %(t)s "%(r)s" %(s)s %(b)s'
 
 bloomz-176b:
+	make gen-proto
+
 	make ui
 
 	TOKENIZERS_PARALLELISM=false \
 	MODEL_NAME=bigscience/bloomz \
 	MODEL_CLASS=AutoModelForCausalLM \
 	DEPLOYMENT_FRAMEWORK=ds_inference \
-	DTYPE=fp16 \
+	DTYPE=float16 \
 	MAX_INPUT_LENGTH=2048 \
 	MAX_BATCH_SIZE=4 \
 	CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 \
 	gunicorn -t 0 -w 1 -b 127.0.0.1:5000 inference_server.server:app --access-logfile - --access-logformat '%(h)s %(t)s "%(r)s" %(s)s %(b)s'
 
 bloom-176b-int8:
+	make gen-proto
+
 	make ui
 
 	TOKENIZERS_PARALLELISM=false \
@@ -69,52 +77,60 @@ bloom-176b-int8:
 
 # ------------------------- HF accelerate -------------------------
 bloom-560m:
+	make gen-proto
+
 	make ui
 
 	TOKENIZERS_PARALLELISM=false \
 	MODEL_NAME=bigscience/bloom-560m \
 	MODEL_CLASS=AutoModelForCausalLM \
 	DEPLOYMENT_FRAMEWORK=hf_accelerate \
-	DTYPE=bf16 \
+	DTYPE=bfloat16 \
 	MAX_INPUT_LENGTH=2048 \
 	MAX_BATCH_SIZE=32 \
 	CUDA_VISIBLE_DEVICES=0 \
 	gunicorn -t 0 -w 1 -b 127.0.0.1:5000 inference_server.server:app --access-logfile - --access-logformat '%(h)s %(t)s "%(r)s" %(s)s %(b)s'
 
 flan-t5-xxl:
+	make gen-proto
+
 	make ui
 
 	TOKENIZERS_PARALLELISM=false \
 	MODEL_NAME=google/flan-t5-xxl \
 	MODEL_CLASS=AutoModelForSeq2SeqLM \
 	DEPLOYMENT_FRAMEWORK=hf_accelerate \
-	DTYPE=bf16 \
+	DTYPE=bfloat16 \
 	MAX_INPUT_LENGTH=2048 \
 	MAX_BATCH_SIZE=4 \
 	CUDA_VISIBLE_DEVICES=0 \
 	gunicorn -t 0 -w 1 -b 127.0.0.1:5000 inference_server.server:app --access-logfile - --access-logformat '%(h)s %(t)s "%(r)s" %(s)s %(b)s'
 
 ul2:
+	make gen-proto
+
 	make ui
 
 	TOKENIZERS_PARALLELISM=false \
 	MODEL_NAME=google/ul2 \
 	MODEL_CLASS=AutoModelForSeq2SeqLM \
 	DEPLOYMENT_FRAMEWORK=hf_accelerate \
-	DTYPE=bf16 \
+	DTYPE=bfloat16 \
 	MAX_INPUT_LENGTH=2048 \
 	MAX_BATCH_SIZE=4 \
 	CUDA_VISIBLE_DEVICES=0 \
 	gunicorn -t 0 -w 1 -b 127.0.0.1:5000 inference_server.server:app --access-logfile - --access-logformat '%(h)s %(t)s "%(r)s" %(s)s %(b)s'
 
 codegen-mono:
+	make gen-proto
+
 	make ui
 
 	TOKENIZERS_PARALLELISM=false \
 	MODEL_NAME=Salesforce/codegen-16B-mono \
 	MODEL_CLASS=AutoModelForCausalLM \
 	DEPLOYMENT_FRAMEWORK=hf_accelerate \
-	DTYPE=bf16 \
+	DTYPE=bfloat16 \
 	MAX_INPUT_LENGTH=2048 \
 	MAX_BATCH_SIZE=4 \
 	CUDA_VISIBLE_DEVICES=0 \
@@ -122,23 +138,27 @@ codegen-mono:
 
 # ------------------------- HF CPU -------------------------
 bloom-560m-cpu:
+	make gen-proto
+
 	make ui
 
 	MODEL_NAME=bigscience/bloom-560m \
 	MODEL_CLASS=AutoModelForCausalLM \
 	DEPLOYMENT_FRAMEWORK=hf_cpu \
-	DTYPE=fp32 \
+	DTYPE=float32 \
 	MAX_INPUT_LENGTH=2048 \
 	MAX_BATCH_SIZE=32 \
 	gunicorn -t 0 -w 1 -b 127.0.0.1:5000 inference_server.server:app --access-logfile - --access-logformat '%(h)s %(t)s "%(r)s" %(s)s %(b)s'
 
 flan-t5-base-cpu:
+	make gen-proto
+
 	make ui
 
 	MODEL_NAME=google/flan-t5-base \
 	MODEL_CLASS=AutoModelForSeq2SeqLM \
 	DEPLOYMENT_FRAMEWORK=hf_cpu \
-	DTYPE=bf16 \
+	DTYPE=bfloat16 \
 	MAX_INPUT_LENGTH=2048 \
 	MAX_BATCH_SIZE=32 \
 	gunicorn -t 0 -w 1 -b 127.0.0.1:5000 inference_server.server:app --access-logfile - --access-logformat '%(h)s %(t)s "%(r)s" %(s)s %(b)s'

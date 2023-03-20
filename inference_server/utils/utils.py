@@ -12,6 +12,8 @@ from typing import Any, Callable, List, Tuple, Union
 import torch
 import torch.distributed as dist
 
+import transformers
+
 from ..constants import DS_INFERENCE, DS_ZERO, HF_ACCELERATE, HF_CPU
 
 
@@ -38,40 +40,21 @@ def get_argument_parser() -> argparse.ArgumentParser:
         choices=[HF_ACCELERATE, DS_INFERENCE, DS_ZERO, HF_CPU],
         default=HF_ACCELERATE,
     )
+    group.add_argument("--model_name", type=str, required=True, help="model name to use")
     group.add_argument(
-        "--model_name",
-        type=str,
-        required=True,
-        help="model name to use",
+        "--model_class", type=lambda x: getattr(transformers, x), required=True, help="model class to use"
     )
-    group.add_argument(
-        "--model_class",
-        type=str,
-        required=True,
-        help="model class to use",
-    )
-    group.add_argument(
-        "--dtype", type=str, required=True, choices=["bf16", "fp16", "int8", "fp32"], help="dtype for model"
-    )
+    group.add_argument("--dtype", type=lambda x: getattr(torch, x), required=True, help="dtype for model")
     group.add_argument(
         "--generate_kwargs",
-        type=str,
-        default='{"min_length": 100, "max_new_tokens": 100, "do_sample": false}',
+        type=lambda x: json.loads(x),
+        default={"min_length": 100, "max_new_tokens": 100, "do_sample": False},
         help="generate parameters. look at https://huggingface.co/docs/transformers/v4.21.1/en/main_classes/text_generation#transformers.generation_utils.GenerationMixin.generate to see the supported parameters",
     )
     group.add_argument("--max_input_length", type=int, help="max input length")
     group.add_argument("--max_batch_size", type=int, help="max supported batch size")
 
     return parser
-
-
-def parse_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
-    args = parser.parse_args()
-
-    args.dtype = get_torch_dtype(args.dtype)
-    args.generate_kwargs = json.loads(args.generate_kwargs)
-
-    return args
 
 
 def run_rank_n(func: Callable, rank: int = 0, barrier: bool = False) -> None:
@@ -98,28 +81,6 @@ def run_rank_n(func: Callable, rank: int = 0, barrier: bool = False) -> None:
 @run_rank_n
 def print_rank_0(*args, **kwargs) -> None:
     print(*args, **kwargs)
-
-
-def get_torch_dtype(dtype_str: str) -> torch.dtype:
-    if dtype_str == "bf16":
-        return torch.bfloat16
-    elif dtype_str == "fp16":
-        return torch.float16
-    elif dtype_str == "int8":
-        return torch.int8
-    elif dtype_str == "fp32":
-        return torch.float32
-
-
-def get_str_dtype(dtype_str: torch.dtype) -> str:
-    if dtype_str == torch.bfloat16:
-        return "bf16"
-    elif dtype_str == torch.float16:
-        return "fp16"
-    elif dtype_str == torch.int8:
-        return "int8"
-    elif dtype_str == torch.float32:
-        return "fp32"
 
 
 def get_dummy_batch(batch_size: int, input_sentences: List[str] = None) -> List[str]:
