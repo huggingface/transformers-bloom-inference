@@ -77,7 +77,7 @@ class TemporaryCheckpointsJSON:
     def write_checkpoints_json(self) -> None:
         print(self.model_path)
         with io.open(self.tmp_file, "w", encoding="utf-8") as f:
-            data = {"type": "BLOOM", "checkpoints": glob.glob(f"{self.model_path}/*.bin"), "version": 1.0}
+            data = {"type": "BLOOM", "checkpoints": glob.glob("*.bin", root_dir=self.model_path), "version": 1.0}
             json.dump(data, f)
 
     def __enter__(self):
