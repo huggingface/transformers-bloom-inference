@@ -1,3 +1,6 @@
+> [!NOTE]  
+> This repository has been archived and is not being maintained any longer since a lot more efficient serving frameworks have been released recently like vLLM and TGI.
+
 # Fast Inference Solutions for BLOOM
 
 This repo provides demos and packages to perform fast inference solutions for BLOOM. Some of the solutions have their own repos in which case a link to the [corresponding repos](#Other-inference-solutions) is provided instead.
